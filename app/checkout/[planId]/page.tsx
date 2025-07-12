@@ -49,7 +49,7 @@ export default async function CheckoutPage({ params }: { params: { planId: strin
                     <p className="text-4xl font-bold text-cyan-400 mt-2">
                       €{plan.price}{" "}
                       <span className="text-lg font-medium text-gray-500">
-                        / {plan.interval === "annual" ? "year" : "month"}
+                        {plan.interval === "monthly" ? "/ month" : plan.interval === "annual" ? "/ year" : " once"}
                       </span>
                     </p>
                   </div>
