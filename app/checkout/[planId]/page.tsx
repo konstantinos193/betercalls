@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { CheckCircle, ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react"
 import { createSubscription } from "@/app/actions/payment"
-import { TokenPriceDisplay } from "@/components/token-price-display"
 
 // Force dynamic rendering for this page since it fetches data from database
 export const dynamic = 'force-dynamic'
@@ -124,9 +123,6 @@ export default async function CheckoutPage({ params }: { params: { planId: strin
                   </li>
                 </ul>
               </div>
-              
-              {/* Token Price Display */}
-              <TokenPriceDisplay eurAmount={plan.price} />
               
               <div className="text-center text-xs text-gray-600">
                 <p>
