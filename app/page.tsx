@@ -5,16 +5,15 @@ import { SiteHeader } from "@/components/site-header"
 import { FooterV2 } from "@/components/footer-v2"
 import { PickCardV2, type Pick } from "@/components/pick-card-v2"
 import { LiveTicker } from "@/components/live-ticker"
-import { createSubscription } from "@/app/actions/payment"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 const livePicks: Pick[] = [
   {
     id: "1",
     sport: "Football",
-    match: { homeTeam: "Manchester United", awayTeam: "Liverpool", time: "Sun 4:25 PM" },
+    match: { homeTeam: "Chiefs", awayTeam: "49ers", time: "Sun 4:25 PM" },
     betType: "Spread",
-    pick: "Manchester United -1.5",
+    pick: "Chiefs -2.5",
     odds: "-110",
     units: 2,
     status: "Upcoming",
@@ -22,9 +21,9 @@ const livePicks: Pick[] = [
   {
     id: "2",
     sport: "Football",
-    match: { homeTeam: "Arsenal", awayTeam: "Chelsea", time: "Sun 1:00 PM" },
+    match: { homeTeam: "Ravens", awayTeam: "Steelers", time: "Sun 1:00 PM" },
     betType: "Total",
-    pick: "Over 2.5",
+    pick: "Over 44.5",
     odds: "-110",
     units: 1.5,
     status: "Upcoming",
@@ -32,9 +31,9 @@ const livePicks: Pick[] = [
 ]
 
 const tickerItems = [
-  { id: 1, text: "FOOTBALL: Manchester United -1.5 vs Liverpool - WIN" },
-  { id: 2, text: "FOOTBALL: Arsenal/Chelsea O2.5 - WIN" },
-  { id: 3, text: "NEW CALL: FOOTBALL: Barcelona ML vs Real Madrid" },
+  { id: 1, text: "FOOTBALL: Chiefs -2.5 vs 49ers - WIN" },
+  { id: 2, text: "FOOTBALL: Ravens/Steelers O44.5 - WIN" },
+  { id: 3, text: "NEW CALL: FOOTBALL: Lions ML vs Packers" },
 ]
 
 export default async function CuttingEdgeLandingPage() {
@@ -127,13 +126,12 @@ export default async function CuttingEdgeLandingPage() {
           </div>
           <div className="mt-16 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
             {(plans || []).map((plan) => {
-              const createSubscriptionWithId = createSubscription.bind(null, plan.id)
               return (
                 <div
                   key={plan.id}
-                  className={`border border-gray-800 rounded-xl p-8 flex flex-col ${plan.interval === "annual" ? "border-2 border-cyan-400 bg-gray-900/50 shadow-[0_0_30px_rgba(56,189,248,0.3)]" : ""}`}
+                  className={`border border-gray-800 rounded-xl p-8 flex flex-col ${plan.interval === "yearly" ? "border-2 border-cyan-400 bg-gray-900/50 shadow-[0_0_30px_rgba(56,189,248,0.3)]" : ""}`}
                 >
-                  {plan.interval === "annual" && (
+                  {plan.interval === "yearly" && (
                     <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-cyan-400 text-black px-4 py-1 rounded-full text-sm font-bold">
                       BEST VALUE
                     </div>
@@ -143,7 +141,7 @@ export default async function CuttingEdgeLandingPage() {
                   <div className="mt-6 text-4xl font-bold text-white">
                     €{plan.price}{" "}
                     <span className="text-lg font-medium text-gray-500">
-                      {plan.interval === "monthly" ? "/ mo" : plan.interval === "annual" ? "/ yr" : " once"}
+                      / {plan.interval === "monthly" ? "mo" : "yr"}
                     </span>
                   </div>
                   <ul className="mt-8 space-y-4 text-gray-300 flex-grow">
@@ -154,14 +152,19 @@ export default async function CuttingEdgeLandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <form action={createSubscriptionWithId}>
-                    <Button
-                      type="submit"
-                      className="mt-8 w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300 transition-all duration-300"
-                    >
-                      Choose Plan
-                    </Button>
-                  </form>
+                  <Button
+                    asChild
+                    size="lg"
+                    className={`mt-8 w-full font-bold transition-all duration-300 group ${
+                      plan.interval === "yearly"
+                        ? "bg-cyan-400 text-black hover:bg-cyan-300 shadow-[0_0_20px_rgba(56,189,248,0.5)]"
+                        : "bg-gray-800/50 hover:bg-cyan-400/10 border border-gray-700 hover:border-cyan-400 text-cyan-400"
+                    }`}
+                  >
+                    <Link href={`/checkout/${plan.id}`}>
+                      Choose Plan <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
                 </div>
               )
             })}
