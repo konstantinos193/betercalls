@@ -49,47 +49,10 @@ export async function signUp(formData: FormData) {
   console.log("Session:", data.session ? "Session created" : "No session")
   console.log("Email confirmed:", data.user.email_confirmed_at ? "Yes" : "No")
   
-  // Check if email confirmation is required
-  if (!data.user.email_confirmed_at) {
-    console.log("Email confirmation required, redirecting to confirmation page")
-    return redirect("/sign-up?message=Please check your email and confirm your account before signing in.")
-  }
-  
-  // Ensure profile exists (in case trigger didn't fire)
-  try {
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", data.user.id)
-      .single()
-    
-    if (profileError && profileError.code === 'PGRST116') {
-      // Profile doesn't exist, create it
-      console.log("Profile not found, creating one")
-      const { error: insertError } = await supabase
-        .from("profiles")
-        .insert({
-          id: data.user.id,
-          subscription_status: "inactive",
-          is_admin: false
-        })
-      
-      if (insertError) {
-        console.error("Failed to create profile:", insertError)
-        return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
-      }
-    } else if (profileError) {
-      console.error("Error checking profile:", profileError)
-      return redirect(`/sign-up?message=Account created but profile verification failed. Please contact support.`)
-    }
-  } catch (profileError) {
-    console.error("Unexpected error during profile creation:", profileError)
-    return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
-  }
-  
-  revalidatePath("/", "layout")
-  console.log("Redirecting to /calls")
-  return redirect("/calls")
+  // Always redirect to confirmation page first, regardless of email confirmation status
+  // This prevents the rate limiting issue and ensures proper flow
+  console.log("Redirecting to confirmation page")
+  return redirect(`/email-confirmation?message=Account created successfully! Please check your email and confirm your account before signing in.&email=${encodeURIComponent(email)}`)
 }
 
 export async function signIn(formData: FormData) {
@@ -149,6 +112,11 @@ export async function signIn(formData: FormData) {
       // Handle specific error cases
       if (error.message === "Email not confirmed") {
         return redirect(`/login?message=Please check your email and confirm your account before signing in.`)
+      }
+      
+      // Handle rate limiting error
+      if (error.message.includes("For security purposes, you can only request this after")) {
+        return redirect(`/login?message=Please wait a moment before trying to sign in again. If you just signed up, please check your email and confirm your account first. You can also use the resend confirmation option on the sign-up page.`)
       }
       
       return redirect(`/login?message=Could not authenticate user: ${error.message}`)
@@ -214,7 +182,7 @@ export async function resendConfirmationEmail(formData: FormData) {
   }
   
   console.log("Confirmation email resent successfully")
-  return redirect("/sign-up?message=Confirmation email sent! Please check your inbox.")
+  return redirect(`/email-confirmation?message=Confirmation email sent! Please check your inbox.&email=${encodeURIComponent(email)}`)
 }
 
 // For /account page - refactored to return state

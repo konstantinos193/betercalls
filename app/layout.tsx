@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"
 
 export const metadata: Metadata = {
   title: {

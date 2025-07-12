@@ -58,7 +58,7 @@ export class HelioClient {
         name: true,
       },
       // This is where Helio will send the user after a successful payment
-      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/calls`,
+      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
     }
 
     return this.request("/subscribe", {
@@ -81,7 +81,7 @@ export class HelioClient {
         name: true,
       },
       // This is where Helio will send the user after a successful payment
-      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/calls`,
+      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
     }
 
     return this.request("/pay", {
