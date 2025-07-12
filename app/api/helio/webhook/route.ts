@@ -92,7 +92,7 @@ export async function POST(request: Request) {
       }
 
       case "payment.succeeded": {
-        // Handle one-time payments for lifetime plans
+        // Handle one-time payments for all plans (including subscription plans)
         const { customer, payment } = event.data
 
         if (!customer || !customer.email || !payment || !payment.id) {
@@ -107,12 +107,17 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        // Update the user's profile for lifetime access
+        // Determine subscription tier based on payment amount or product name
+        // For now, we'll treat all one-time payments as lifetime access
+        // TODO: Implement proper tier detection based on payment amount or product metadata
+        const subscriptionTier = "lifetime" // This should be determined based on the actual plan purchased
+
+        // Update the user's profile
         const { error: profileError } = await supabase
           .from("profiles")
           .update({
             subscription_status: "active",
-            subscription_tier: "lifetime",
+            subscription_tier: subscriptionTier,
             helio_subscription_id: payment.id, // Store payment ID instead of subscription ID
           })
           .eq("id", user.user.id)
@@ -122,7 +127,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "Failed to update user profile" }, { status: 500 })
         }
 
-        console.log(`Successfully activated lifetime access for ${customer.email}`)
+        console.log(`Successfully activated ${subscriptionTier} access for ${customer.email}`)
         break
       }
 

@@ -32,10 +32,10 @@ export class HelioClient {
       throw new Error("Helio payment is not configured. Please set HELIO_SECRET_KEY environment variable.")
     }
 
-    const url = `${HELIO_API_URL}${endpoint}`
+    // Add API key as query parameter for Helio API
+    const url = `${HELIO_API_URL}${endpoint}?apiKey=${this.apiKey}`
     const headers = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${this.apiKey}`,
     }
 
     console.log("Request URL:", url)
@@ -66,31 +66,11 @@ export class HelioClient {
       return this.createOneTimePayLink(plan)
     }
 
-    // NOTE: Helio works with a base currency (e.g., USDC).
-    // It will automatically allow payment in other cryptos like SOL, ETH, BTC.
-    // You must get your Wallet ID and the Currency ID for USDC from your Helio dashboard.
-    const payload = {
-      name: `${plan.name} Subscription`,
-      amount: plan.price,
-      interval: plan.interval === "monthly" ? "MONTHLY" : "YEARLY",
-      currency: "USDC", // Base currency
-      product: {
-        name: `BeterCalls - ${plan.name}`,
-        description: `Access to all ${plan.name} features on BeterCalls.`,
-      },
-      customerDetails: {
-        // We will pre-fill these later with user data
-        email: true,
-        name: true,
-      },
-      // This is where Helio will send the user after a successful payment
-      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
-    }
-
-    return this.request("/subscribe", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
+    // For monthly/annual plans, we'll also use one-time payment links for now
+    // since the /subscribe endpoint doesn't exist in the Helio API
+    // TODO: Implement proper subscription handling when Helio provides subscription endpoints
+    console.log("Creating one-time payment link for subscription plan:", plan.name)
+    return this.createOneTimePayLink(plan)
   }
 
   async createOneTimePayLink(plan: { name: string; price: number; interval: string }) {
@@ -107,7 +87,7 @@ export class HelioClient {
       template: "PRODUCT",
       product: {
         name: plan.name,
-        description: `Lifetime access to all ${plan.name} features on BeterCalls.`,
+        description: `Access to all ${plan.name} features on BeterCalls.`,
       },
       price: priceBaseUnits,
       pricingCurrency: "USDC",
@@ -117,30 +97,10 @@ export class HelioClient {
       redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
     };
 
-    try {
-      // Pass API key as query param
-      const url = `${HELIO_API_URL}/v1/paylink/create/api-key?apiKey=${this.apiKey}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Helio API Error:", response.status, response.statusText, errorBody);
-        throw new Error(`Helio API Error: ${response.status} ${response.statusText} - ${errorBody}`);
-      }
-
-      const responseData = await response.json();
-      // The pay link URL is usually in responseData.url or responseData.payLinkUrl
-      return responseData;
-    } catch (error) {
-      console.error("Helio createOneTimePayLink failed:", error);
-      throw error;
-    }
+    return this.request("/paylink/create/api-key", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
 }
 
