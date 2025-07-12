@@ -3,20 +3,29 @@ import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
   console.log("=== MIDDLEWARE EXECUTION ===")
+  console.log("Timestamp:", new Date().toISOString())
   console.log("Request pathname:", request.nextUrl.pathname)
   console.log("Request method:", request.method)
+  console.log("Request URL:", request.url)
   
-  const { supabase, response } = createSupabaseMiddlewareClient(request)
+  try {
+    console.log("Creating Supabase middleware client...")
+    const { supabase, response } = createSupabaseMiddlewareClient(request)
+    console.log("Supabase middleware client created successfully")
 
-  // Refresh session if expired - required for Server Components
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    // Refresh session if expired - required for Server Components
+    console.log("Getting session...")
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  console.log("Session status:", session ? "Active" : "No session")
-  if (session) {
-    console.log("User ID:", session.user.id)
-  }
+    console.log("Session status:", session ? "Active" : "No session")
+    if (session) {
+      console.log("User ID:", session.user.id)
+      console.log("User email:", session.user.email)
+      console.log("Session access token:", session.access_token ? "Present" : "Missing")
+      console.log("Session refresh token:", session.refresh_token ? "Present" : "Missing")
+    }
 
   const { pathname } = request.nextUrl
 
@@ -85,6 +94,16 @@ export async function middleware(request: NextRequest) {
 
   console.log("Middleware completed successfully")
   return response
+  } catch (error: any) {
+    console.error("=== MIDDLEWARE ERROR ===")
+    console.error("Error type:", typeof error)
+    console.error("Error message:", error?.message)
+    console.error("Error stack:", error?.stack)
+    console.error("Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+    
+    // Return a basic response to prevent the app from crashing
+    return NextResponse.next()
+  }
 }
 
 export const config = {

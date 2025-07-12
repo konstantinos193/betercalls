@@ -87,32 +87,56 @@ export async function signUp(formData: FormData) {
 
 export async function signIn(formData: FormData) {
   console.log("=== SIGN IN PROCESS STARTED ===")
-  
-  const supabase = createSupabaseServerClient()
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  
-  console.log("Form data received:", { email: email ? "***" : "missing", password: password ? "***" : "missing" })
-  
-  if (!email || !password) {
-    console.log("Missing email or password")
-    return redirect("/login?message=Email and password are required")
-  }
-  
-  console.log("Attempting to sign in user with email:", email)
+  console.log("Timestamp:", new Date().toISOString())
   
   try {
+    console.log("Creating Supabase server client...")
+    const supabase = createSupabaseServerClient()
+    console.log("Supabase client created successfully")
+    
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    
+    console.log("Form data received:", { 
+      email: email ? "***" : "missing", 
+      password: password ? "***" : "missing",
+      emailLength: email?.length || 0,
+      passwordLength: password?.length || 0
+    })
+    
+    if (!email || !password) {
+      console.log("Missing email or password")
+      return redirect("/login?message=Email and password are required")
+    }
+    
+    console.log("Attempting to sign in user with email:", email)
+    console.log("Supabase client type:", typeof supabase)
+    console.log("Supabase auth object:", supabase.auth ? "Available" : "Missing")
+    
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     
     console.log("Sign in response received")
+    console.log("Response data type:", typeof data)
+    console.log("Response error type:", typeof error)
     console.log("Data:", data ? "User data present" : "No user data")
     console.log("Error:", error ? error.message : "No error")
+    
+    if (data) {
+      console.log("User data details:", {
+        userId: data.user?.id,
+        userEmail: data.user?.email,
+        sessionExists: !!data.session,
+        sessionAccessToken: data.session?.access_token ? "Present" : "Missing",
+        sessionRefreshToken: data.session?.refresh_token ? "Present" : "Missing"
+      })
+    }
     
     if (error) {
       console.error("Sign in error details:", {
         message: error.message,
         status: error.status,
-        name: error.name
+        name: error.name,
+        stack: error.stack
       })
       return redirect(`/login?message=Could not authenticate user: ${error.message}`)
     }
@@ -121,11 +145,25 @@ export async function signIn(formData: FormData) {
     console.log("User ID:", data.user?.id)
     console.log("Session:", data.session ? "Session created" : "No session")
     
+    console.log("Calling revalidatePath...")
     revalidatePath("/", "layout")
+    console.log("RevalidatePath completed")
+    
     console.log("Redirecting to /calls")
     redirect("/calls")
-  } catch (error) {
-    console.error("Unexpected error during sign in:", error)
+  } catch (error: any) {
+    console.error("=== UNEXPECTED ERROR DURING SIGN IN ===")
+    console.error("Error type:", typeof error)
+    console.error("Error constructor:", error?.constructor?.name)
+    console.error("Error message:", error?.message)
+    console.error("Error stack:", error?.stack)
+    console.error("Error details:", {
+      name: error?.name,
+      code: error?.code,
+      status: error?.status,
+      statusCode: error?.statusCode
+    })
+    console.error("Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
     return redirect(`/login?message=Unexpected error during sign in`)
   }
 }
