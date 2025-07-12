@@ -41,6 +41,34 @@ export async function signUp(formData: FormData) {
     console.log("User ID:", data.user?.id)
     console.log("Session:", data.session ? "Session created" : "No session")
     
+    // Ensure profile exists (in case trigger didn't fire)
+    if (data.user?.id) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .single()
+      
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log("Profile not found, creating one")
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            subscription_status: "inactive"
+          })
+        
+        if (insertError) {
+          console.error("Failed to create profile:", insertError)
+          return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
+        }
+      } else if (profileError) {
+        console.error("Error checking profile:", profileError)
+        return redirect(`/sign-up?message=Account created but profile verification failed. Please contact support.`)
+      }
+    }
+    
     revalidatePath("/", "layout")
     console.log("Redirecting to /calls")
     redirect("/calls")
