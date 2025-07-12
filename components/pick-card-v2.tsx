@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 
 export type Pick = {
   id: string
-  sport: "NBA" | "NFL" | "MLB" | "Soccer"
+  sport: "Football" | "NBA" | "NFL" | "MLB" | "Soccer"
   match: {
     homeTeam: string
     awayTeam: string
@@ -21,6 +21,7 @@ type PickCardProps = {
 }
 
 const sportColors = {
+  Football: "border-green-500",
   NBA: "border-orange-400",
   NFL: "border-red-500",
   MLB: "border-blue-400",

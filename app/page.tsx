@@ -12,9 +12,9 @@ const livePicks: Pick[] = [
   {
     id: "1",
     sport: "Football",
-    match: { homeTeam: "Chiefs", awayTeam: "49ers", time: "Sun 4:25 PM" },
+    match: { homeTeam: "Manchester United", awayTeam: "Liverpool", time: "Sun 4:25 PM" },
     betType: "Spread",
-    pick: "Chiefs -2.5",
+    pick: "Manchester United -1.5",
     odds: "-110",
     units: 2,
     status: "Upcoming",
@@ -22,9 +22,9 @@ const livePicks: Pick[] = [
   {
     id: "2",
     sport: "Football",
-    match: { homeTeam: "Ravens", awayTeam: "Steelers", time: "Sun 1:00 PM" },
+    match: { homeTeam: "Arsenal", awayTeam: "Chelsea", time: "Sun 1:00 PM" },
     betType: "Total",
-    pick: "Over 44.5",
+    pick: "Over 2.5",
     odds: "-110",
     units: 1.5,
     status: "Upcoming",
@@ -32,9 +32,9 @@ const livePicks: Pick[] = [
 ]
 
 const tickerItems = [
-  { id: 1, text: "FOOTBALL: Chiefs -2.5 vs 49ers - WIN" },
-  { id: 2, text: "FOOTBALL: Ravens/Steelers O44.5 - WIN" },
-  { id: 3, text: "NEW CALL: FOOTBALL: Lions ML vs Packers" },
+  { id: 1, text: "FOOTBALL: Manchester United -1.5 vs Liverpool - WIN" },
+  { id: 2, text: "FOOTBALL: Arsenal/Chelsea O2.5 - WIN" },
+  { id: 3, text: "NEW CALL: FOOTBALL: Barcelona ML vs Real Madrid" },
 ]
 
 export default async function CuttingEdgeLandingPage() {
@@ -131,9 +131,9 @@ export default async function CuttingEdgeLandingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`border border-gray-800 rounded-xl p-8 flex flex-col ${plan.interval === "yearly" ? "border-2 border-cyan-400 bg-gray-900/50 shadow-[0_0_30px_rgba(56,189,248,0.3)]" : ""}`}
+                  className={`border border-gray-800 rounded-xl p-8 flex flex-col ${plan.interval === "annual" ? "border-2 border-cyan-400 bg-gray-900/50 shadow-[0_0_30px_rgba(56,189,248,0.3)]" : ""}`}
                 >
-                  {plan.interval === "yearly" && (
+                  {plan.interval === "annual" && (
                     <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-cyan-400 text-black px-4 py-1 rounded-full text-sm font-bold">
                       BEST VALUE
                     </div>
