@@ -5,6 +5,12 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 
 export async function createSubscription(planId: string) {
+  // Validate input
+  if (!planId || typeof planId !== 'string') {
+    console.error("Invalid planId:", planId)
+    redirect("/?error=invalid-plan")
+  }
+
   console.log("=== PAYMENT ACTION STARTED ===")
   console.log("Plan ID:", planId)
   console.log("Timestamp:", new Date().toISOString())
@@ -14,6 +20,11 @@ export async function createSubscription(planId: string) {
   let planError: any = null
   
   try {
+    // Check environment variables first
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error("Missing Supabase environment variables")
+    }
+
     const supabase = createSupabaseAdminClient()
     console.log("Supabase admin client created successfully")
 

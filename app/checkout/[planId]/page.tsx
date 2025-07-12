@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { FooterV2 } from "@/components/footer-v2"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,16 +11,31 @@ import { createSubscription } from "@/app/actions/payment"
 export const dynamic = 'force-dynamic'
 
 export default async function CheckoutPage({ params }: { params: { planId: string } }) {
-  const supabase = createSupabaseServerClient()
+  // Validate planId
+  if (!params.planId || typeof params.planId !== 'string') {
+    notFound()
+  }
 
-  const { data: plan, error } = await supabase
-    .from("subscription_plans")
-    .select("*")
-    .eq("id", params.planId)
-    .eq("is_active", true)
-    .single()
+  let plan: any = null
 
-  if (error || !plan) {
+  try {
+    const supabase = createSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("id", params.planId)
+      .eq("is_active", true)
+      .single()
+
+    if (error || !data) {
+      notFound()
+    }
+
+    plan = data
+
+  } catch (error) {
+    console.error("Error loading plan:", error)
     notFound()
   }
 
