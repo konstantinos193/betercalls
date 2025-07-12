@@ -66,11 +66,38 @@ export class HelioClient {
       return this.createOneTimePayLink(plan)
     }
 
-    // For monthly/annual plans, we'll also use one-time payment links for now
-    // since the /subscribe endpoint doesn't exist in the Helio API
-    // TODO: Implement proper subscription handling when Helio provides subscription endpoints
-    console.log("Creating one-time payment link for subscription plan:", plan.name)
-    return this.createOneTimePayLink(plan)
+    // For monthly/annual plans, create a subscription pay link using the SUBSCRIPTION template
+    // Convert price to base units (USDC has 6 decimals)
+    const priceBaseUnits = (plan.price * 1_000_000).toString();
+
+    // Dynamically build recipients array for all supported tokens
+    const recipients = PAYMENT_TOKENS.map(token => ({
+      wallet: WALLET_ADDRESSES[token.symbol] || "",
+      currency: token.symbol,
+    }));
+
+    const payload = {
+      template: "SUBSCRIPTION",
+      product: {
+        name: `${plan.name} Subscription`,
+        description: `Access to all ${plan.name} features on BeterCalls.`,
+      },
+      price: priceBaseUnits,
+      pricingCurrency: "USDC",
+      features: {
+        recipients,
+      },
+      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
+      subscriptionDetails: {
+        interval: plan.interval === "monthly" ? "MONTHLY" : "YEARLY",
+        description: `${plan.name} subscription on BeterCalls`,
+      },
+    };
+
+    return this.request("/paylink/create/api-key", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
 
   async createOneTimePayLink(plan: { name: string; price: number; interval: string }) {
