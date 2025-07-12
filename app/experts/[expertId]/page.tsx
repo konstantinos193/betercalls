@@ -1,5 +1,3 @@
-"use client"
-
 import { SiteHeader } from "@/components/site-header"
 import { FooterV2 } from "@/components/footer-v2"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
