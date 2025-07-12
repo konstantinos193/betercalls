@@ -7,10 +7,6 @@ import { redirect } from "next/navigation"
 export async function signUp(formData: FormData) {
   console.log("=== SIGN UP PROCESS STARTED ===")
   
-  console.log("Creating Supabase client...")
-  const supabase = createSupabaseServerClient()
-  console.log("Supabase client created successfully")
-  
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   
@@ -21,74 +17,72 @@ export async function signUp(formData: FormData) {
     return redirect("/sign-up?message=Email and password are required")
   }
   
+  console.log("Creating Supabase client...")
+  const supabase = createSupabaseServerClient()
+  console.log("Supabase client created successfully")
+  
   console.log("Attempting to sign up user with email:", email)
   
-  try {
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    
-    console.log("Sign up response received")
-    console.log("Data:", data ? "User data present" : "No user data")
-    console.log("Error:", error ? error.message : "No error")
-    
-    if (error) {
-      console.error("Sign up error details:", {
-        message: error.message,
-        status: error.status,
-        name: error.name
-      })
-      return redirect(`/sign-up?message=Could not authenticate user: ${error.message}`)
-    }
-    
-    console.log("Sign up successful, user created")
-    console.log("User ID:", data.user?.id)
-    console.log("Session:", data.session ? "Session created" : "No session")
-    
-    // Ensure profile exists (in case trigger didn't fire)
-    if (data.user?.id) {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", data.user.id)
-        .single()
-      
-      if (profileError && profileError.code === 'PGRST116') {
-        // Profile doesn't exist, create it
-        console.log("Profile not found, creating one")
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            id: data.user.id,
-            subscription_status: "inactive"
-          })
-        
-        if (insertError) {
-          console.error("Failed to create profile:", insertError)
-          return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
-        }
-      } else if (profileError) {
-        console.error("Error checking profile:", profileError)
-        return redirect(`/sign-up?message=Account created but profile verification failed. Please contact support.`)
-      }
-    }
-    
-    revalidatePath("/", "layout")
-    console.log("Redirecting to /calls")
-    redirect("/calls")
-  } catch (error) {
-    console.error("Unexpected error during sign up:", error)
-    
-    // Log more details about the error
-    if (error instanceof Error) {
-      console.error("Error name:", error.name)
-      console.error("Error message:", error.message)
-      console.error("Error stack:", error.stack)
-      return redirect(`/sign-up?message=Unexpected error: ${error.message}`)
-    } else {
-      console.error("Unknown error type:", typeof error)
-      console.error("Error value:", error)
-      return redirect(`/sign-up?message=Unexpected error during sign up`)
-    }
+  // First, try to sign up the user
+  const { data, error } = await supabase.auth.signUp({ email, password })
+  
+  console.log("Sign up response received")
+  console.log("Data:", data ? "User data present" : "No user data")
+  console.log("Error:", error ? error.message : "No error")
+  
+  if (error) {
+    console.error("Sign up error details:", {
+      message: error.message,
+      status: error.status,
+      name: error.name
+    })
+    return redirect(`/sign-up?message=Could not authenticate user: ${error.message}`)
   }
+  
+  if (!data.user) {
+    console.error("No user data returned from sign up")
+    return redirect("/sign-up?message=Account creation failed. Please try again.")
+  }
+  
+  console.log("Sign up successful, user created")
+  console.log("User ID:", data.user.id)
+  console.log("Session:", data.session ? "Session created" : "No session")
+  
+  // Ensure profile exists (in case trigger didn't fire)
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", data.user.id)
+      .single()
+    
+    if (profileError && profileError.code === 'PGRST116') {
+      // Profile doesn't exist, create it
+      console.log("Profile not found, creating one")
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: data.user.id,
+          subscription_status: "inactive",
+          is_admin: false
+        })
+      
+      if (insertError) {
+        console.error("Failed to create profile:", insertError)
+        return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
+      }
+    } else if (profileError) {
+      console.error("Error checking profile:", profileError)
+      return redirect(`/sign-up?message=Account created but profile verification failed. Please contact support.`)
+    }
+  } catch (profileError) {
+    console.error("Unexpected error during profile creation:", profileError)
+    return redirect(`/sign-up?message=Account created but profile setup failed. Please contact support.`)
+  }
+  
+  revalidatePath("/", "layout")
+  console.log("Redirecting to /calls")
+  return redirect("/calls")
 }
 
 export async function signIn(formData: FormData) {
