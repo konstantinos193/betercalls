@@ -47,6 +47,13 @@ export async function signUp(formData: FormData) {
   console.log("Sign up successful, user created")
   console.log("User ID:", data.user.id)
   console.log("Session:", data.session ? "Session created" : "No session")
+  console.log("Email confirmed:", data.user.email_confirmed_at ? "Yes" : "No")
+  
+  // Check if email confirmation is required
+  if (!data.user.email_confirmed_at) {
+    console.log("Email confirmation required, redirecting to confirmation page")
+    return redirect("/sign-up?message=Please check your email and confirm your account before signing in.")
+  }
   
   // Ensure profile exists (in case trigger didn't fire)
   try {
@@ -138,6 +145,12 @@ export async function signIn(formData: FormData) {
         name: error.name,
         stack: error.stack
       })
+      
+      // Handle specific error cases
+      if (error.message === "Email not confirmed") {
+        return redirect(`/login?message=Please check your email and confirm your account before signing in.`)
+      }
+      
       return redirect(`/login?message=Could not authenticate user: ${error.message}`)
     }
     
@@ -173,6 +186,35 @@ export async function signOut() {
   await supabase.auth.signOut()
   revalidatePath("/", "layout")
   redirect("/")
+}
+
+export async function resendConfirmationEmail(formData: FormData) {
+  console.log("=== RESEND CONFIRMATION EMAIL PROCESS STARTED ===")
+  
+  const email = formData.get("email") as string
+  
+  if (!email) {
+    return redirect("/sign-up?message=Email is required")
+  }
+  
+  console.log("Creating Supabase client...")
+  const supabase = createSupabaseServerClient()
+  console.log("Supabase client created successfully")
+  
+  console.log("Attempting to resend confirmation email to:", email)
+  
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email
+  })
+  
+  if (error) {
+    console.error("Resend confirmation error:", error)
+    return redirect(`/sign-up?message=Could not resend confirmation email: ${error.message}`)
+  }
+  
+  console.log("Confirmation email resent successfully")
+  return redirect("/sign-up?message=Confirmation email sent! Please check your inbox.")
 }
 
 // For /account page - refactored to return state

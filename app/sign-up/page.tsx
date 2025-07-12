@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
 import { Zap } from "lucide-react"
-import { signUp } from "@/app/auth/actions"
+import { signUp, resendConfirmationEmail } from "@/app/auth/actions"
 
 export default function SignUpPage({ searchParams }: { searchParams: { message: string } }) {
   return (
@@ -48,6 +48,28 @@ export default function SignUpPage({ searchParams }: { searchParams: { message: 
             <CardFooter className="flex flex-col gap-4">
               <Button className="w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300">Create Account</Button>
               {searchParams.message && <p className="text-center text-sm text-red-400">{searchParams.message}</p>}
+              
+              {/* Resend confirmation form - show when email confirmation is needed */}
+              {searchParams.message && searchParams.message.includes("confirm your account") && (
+                <div className="w-full border-t border-gray-700 pt-4">
+                  <p className="text-center text-sm text-gray-400 mb-3">
+                    Didn't receive the confirmation email?
+                  </p>
+                  <form action={resendConfirmationEmail} className="space-y-3">
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      required
+                      className="bg-gray-900/80 border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
+                    />
+                    <Button type="submit" variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-800">
+                      Resend Confirmation Email
+                    </Button>
+                  </form>
+                </div>
+              )}
+              
               <div className="text-center text-sm text-gray-400">
                 Already have an account?{" "}
                 <Link href="/login" className="font-medium text-cyan-400 hover:underline">
