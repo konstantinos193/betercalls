@@ -70,10 +70,10 @@ export class HelioClient {
     // Convert price to base units (USDC has 6 decimals)
     const priceBaseUnits = (plan.price * 1_000_000).toString();
 
-    // Dynamically build recipients array for all supported tokens
+    // Recipients: all supported tokens
     const recipients = PAYMENT_TOKENS.map(token => ({
-      wallet: WALLET_ADDRESSES[token.symbol] || "",
-      currency: token.symbol,
+      currencyId: token.id,
+      walletId: WALLET_ADDRESSES[token.symbol] || "",
     }));
 
     const payload = {
@@ -83,10 +83,9 @@ export class HelioClient {
         description: `Access to all ${plan.name} features on BeterCalls.`,
       },
       price: priceBaseUnits,
-      pricingCurrency: "USDC",
-      features: {
-        recipients,
-      },
+      pricingCurrency: PAYMENT_TOKENS.find(t => t.symbol === "USDC")?.id || recipients[0].currencyId,
+      features: {},
+      recipients,
       redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
       subscriptionDetails: {
         interval: plan.interval === "monthly" ? "MONTHLY" : "YEARLY",
@@ -104,10 +103,10 @@ export class HelioClient {
     // Convert price to base units (USDC has 6 decimals)
     const priceBaseUnits = (plan.price * 1_000_000).toString();
 
-    // Dynamically build recipients array for all supported tokens
+    // Recipients: all supported tokens
     const recipients = PAYMENT_TOKENS.map(token => ({
-      wallet: WALLET_ADDRESSES[token.symbol] || "",
-      currency: token.symbol,
+      currencyId: token.id,
+      walletId: WALLET_ADDRESSES[token.symbol] || "",
     }));
 
     const payload = {
@@ -117,10 +116,9 @@ export class HelioClient {
         description: `Access to all ${plan.name} features on BeterCalls.`,
       },
       price: priceBaseUnits,
-      pricingCurrency: "USDC",
-      features: {
-        recipients,
-      },
+      pricingCurrency: PAYMENT_TOKENS.find(t => t.symbol === "USDC")?.id || recipients[0].currencyId,
+      features: {},
+      recipients,
       redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
     };
 
