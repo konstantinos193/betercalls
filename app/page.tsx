@@ -7,6 +7,9 @@ import { PickCardV2, type Pick } from "@/components/pick-card-v2"
 import { LiveTicker } from "@/components/live-ticker"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
+// Force dynamic rendering for this page since it fetches data from database
+export const dynamic = 'force-dynamic'
+
 const livePicks: Pick[] = [
   {
     id: "1",

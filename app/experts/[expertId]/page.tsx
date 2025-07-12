@@ -9,6 +9,9 @@ import { User, Users } from "lucide-react"
 import { StatCard } from "@/components/expert-stat-card"
 import { FollowButton } from "@/components/follow-button"
 
+// Force dynamic rendering for this page since it uses authentication and fetches data
+export const dynamic = 'force-dynamic'
+
 function formatDistanceToNow(dateString: string) {
   const date = new Date(dateString)
   const now = new Date()

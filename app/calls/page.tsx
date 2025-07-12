@@ -3,6 +3,9 @@ import { SiteHeader } from "@/components/site-header"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { Call } from "@/types/calls"
 
+// Force dynamic rendering for this page since it uses cookies for authentication
+export const dynamic = 'force-dynamic'
+
 // Helper function to format time difference
 function formatDistanceToNow(dateString: string) {
   const date = new Date(dateString)

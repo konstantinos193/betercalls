@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle, ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react"
 import { createSubscription } from "@/app/actions/payment"
 
+// Force dynamic rendering for this page since it fetches data from database
+export const dynamic = 'force-dynamic'
+
 export default async function CheckoutPage({ params }: { params: { planId: string } }) {
   const supabase = createSupabaseServerClient()
 

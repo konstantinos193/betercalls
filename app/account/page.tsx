@@ -11,6 +11,9 @@ import { UpdatePasswordForm } from "@/components/update-password-form"
 import { UpdateProfileForm } from "@/components/update-profile-form"
 import { AvatarUploadForm } from "@/components/avatar-upload-form"
 
+// Force dynamic rendering for this page since it uses authentication and fetches data
+export const dynamic = 'force-dynamic'
+
 export default async function AccountPage() {
   const supabase = createSupabaseServerClient()
 
