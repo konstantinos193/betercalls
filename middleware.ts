@@ -23,14 +23,41 @@ export async function middleware(request: NextRequest) {
   // If user is not logged in, redirect to login page
   if (!session) {
     console.log("No session found, checking if protected route")
-    if (pathname.startsWith("/calls") || pathname.startsWith("/admin") || pathname.startsWith("/account")) {
+    if (pathname.startsWith("/calls") || pathname.startsWith("/account")) {
       console.log("Redirecting to login page")
       const url = new URL(request.url)
       url.pathname = "/login"
       return NextResponse.redirect(url)
     }
+    if (pathname.startsWith("/admin")) {
+      console.log("Redirecting to admin login page")
+      const url = new URL(request.url)
+      url.pathname = "/admin/login"
+      return NextResponse.redirect(url)
+    }
     console.log("Not a protected route, continuing")
     return response
+  }
+
+  // Check admin access for admin routes
+  if (pathname.startsWith("/admin")) {
+    console.log("User accessing admin route, checking admin status")
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .single()
+
+    console.log("User admin status:", profile?.is_admin)
+
+    if (!profile?.is_admin) {
+      console.log("User is not an admin, redirecting to admin login")
+      const url = new URL(request.url)
+      url.pathname = "/admin/login"
+      return NextResponse.redirect(url)
+    }
+    
+    console.log("Admin access granted")
   }
 
   // If user is logged in, check for active subscription to access /calls

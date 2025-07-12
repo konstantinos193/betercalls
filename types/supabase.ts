@@ -61,6 +61,7 @@ export type Database = {
           id: string
           subscription_status: string | null
           subscription_tier: string | null
+          is_admin: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -69,6 +70,7 @@ export type Database = {
           id: string
           subscription_status?: string | null
           subscription_tier?: string | null
+          is_admin?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -77,6 +79,7 @@ export type Database = {
           id?: string
           subscription_status?: string | null
           subscription_tier?: string | null
+          is_admin?: boolean
         }
         Relationships: [
           {
