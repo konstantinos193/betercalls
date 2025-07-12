@@ -7,7 +7,10 @@ import { redirect } from "next/navigation"
 export async function signUp(formData: FormData) {
   console.log("=== SIGN UP PROCESS STARTED ===")
   
+  console.log("Creating Supabase client...")
   const supabase = createSupabaseServerClient()
+  console.log("Supabase client created successfully")
+  
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   
@@ -19,7 +22,6 @@ export async function signUp(formData: FormData) {
   }
   
   console.log("Attempting to sign up user with email:", email)
-  console.log("Supabase client created successfully")
   
   try {
     const { data, error } = await supabase.auth.signUp({ email, password })
@@ -74,7 +76,18 @@ export async function signUp(formData: FormData) {
     redirect("/calls")
   } catch (error) {
     console.error("Unexpected error during sign up:", error)
-    return redirect(`/sign-up?message=Unexpected error during sign up`)
+    
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error("Error name:", error.name)
+      console.error("Error message:", error.message)
+      console.error("Error stack:", error.stack)
+      return redirect(`/sign-up?message=Unexpected error: ${error.message}`)
+    } else {
+      console.error("Unknown error type:", typeof error)
+      console.error("Error value:", error)
+      return redirect(`/sign-up?message=Unexpected error during sign up`)
+    }
   }
 }
 

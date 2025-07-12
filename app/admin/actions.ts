@@ -1,7 +1,9 @@
 "use server"
 
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 
 export type FormState = {
   message: string
@@ -99,6 +101,56 @@ export async function savePlan(prevState: FormState, formData: FormData): Promis
   return { message: "Plan saved successfully!", success: true }
 }
 
+export async function saveExpert(prevState: FormState, formData: FormData): Promise<FormState> {
+  const supabase = createSupabaseAdminClient()
+  const id = formData.get("id") as string
+
+  const expertData = {
+    name: formData.get("name") as string,
+    bio: formData.get("bio") as string,
+    avatar_url: formData.get("avatar_url") as string,
+  }
+
+  let error
+
+  if (id) {
+    // Update existing expert
+    const { error: updateError } = await supabase.from("experts").update(expertData).eq("id", id)
+    error = updateError
+  } else {
+    // Create new expert
+    const { error: insertError } = await supabase.from("experts").insert(expertData)
+    error = insertError
+  }
+
+  if (error) {
+    console.error("Error saving expert:", error)
+    return { message: `Database Error: ${error.message}`, success: false }
+  }
+
+  revalidatePath("/admin/experts")
+  return { message: "Expert saved successfully!", success: true }
+}
+
+export async function deleteExpert(formData: FormData): Promise<FormState> {
+  const supabase = createSupabaseAdminClient()
+  const id = formData.get("id") as string
+
+  if (!id) {
+    return { message: "Expert ID is required.", success: false }
+  }
+
+  const { error } = await supabase.from("experts").delete().eq("id", id)
+
+  if (error) {
+    console.error("Error deleting expert:", error)
+    return { message: `Database Error: ${error.message}`, success: false }
+  }
+
+  revalidatePath("/admin/experts")
+  return { message: "Expert deleted successfully!", success: true }
+}
+
 export async function updateUserSubscription(prevState: FormState, formData: FormData): Promise<FormState> {
   const supabase = createSupabaseAdminClient()
   const userId = formData.get("userId") as string
@@ -117,4 +169,66 @@ export async function updateUserSubscription(prevState: FormState, formData: For
 
   revalidatePath("/admin/users")
   return { message: "User subscription updated successfully!", success: true }
+}
+
+export async function adminLogin(formData: FormData) {
+  console.log("=== ADMIN LOGIN PROCESS STARTED ===")
+  
+  const supabase = createSupabaseServerClient()
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  
+  console.log("Admin login attempt for email:", email)
+  
+  if (!email || !password) {
+    console.log("Missing email or password")
+    return redirect("/admin/login?message=Email and password are required")
+  }
+  
+  try {
+    // First, authenticate the user
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    
+    if (error) {
+      console.error("Admin login error:", error)
+      return redirect(`/admin/login?message=Authentication failed: ${error.message}`)
+    }
+    
+    if (!data.user) {
+      console.error("No user data returned")
+      return redirect("/admin/login?message=Authentication failed")
+    }
+    
+    // Check if the user is an admin
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", data.user.id)
+      .single()
+    
+    if (profileError) {
+      console.error("Error checking admin status:", profileError)
+      return redirect("/admin/login?message=Error verifying admin status")
+    }
+    
+    if (!profile?.is_admin) {
+      console.log("User is not an admin")
+      // Sign out the user since they're not an admin
+      await supabase.auth.signOut()
+      return redirect("/admin/login?message=Access denied. Admin privileges required.")
+    }
+    
+    console.log("Admin login successful for:", email)
+    revalidatePath("/admin", "layout")
+    return redirect("/admin")
+    
+  } catch (error) {
+    console.error("Unexpected error during admin login:", error)
+    
+    if (error instanceof Error) {
+      return redirect(`/admin/login?message=Unexpected error: ${error.message}`)
+    } else {
+      return redirect("/admin/login?message=Unexpected error during login")
+    }
+  }
 }

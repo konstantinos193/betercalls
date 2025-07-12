@@ -8,6 +8,7 @@ import { Shield, LayoutDashboard, Megaphone, Users, Settings, CreditCard } from 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/calls", label: "Calls", icon: Megaphone },
+  { href: "/admin/experts", label: "Experts", icon: Users },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/plans", label: "Plans", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
