@@ -1,3 +1,13 @@
+import { PAYMENT_TOKENS } from "@/lib/payment-tokens";
+
+const WALLET_ADDRESSES: Record<string, string> = {
+  BTC: process.env.BTC_WALLET_ADDRESS || "",
+  SOL: process.env.SOL_WALLET_ADDRESS || "",
+  ETH: process.env.ETH_WALLET_ADDRESS || "",
+  USDC: process.env.USDC_WALLET_ADDRESS || "",
+  USDT: process.env.USDT_WALLET_ADDRESS || "",
+};
+
 const HELIO_API_URL = "https://api.hel.io/v1"
 
 export class HelioClient {
@@ -84,26 +94,53 @@ export class HelioClient {
   }
 
   async createOneTimePayLink(plan: { name: string; price: number; interval: string }) {
+    // Convert price to base units (USDC has 6 decimals)
+    const priceBaseUnits = (plan.price * 1_000_000).toString();
+
+    // Dynamically build recipients array for all supported tokens
+    const recipients = PAYMENT_TOKENS.map(token => ({
+      wallet: WALLET_ADDRESSES[token.symbol] || "",
+      currency: token.symbol,
+    }));
+
     const payload = {
-      name: `${plan.name} - One Time Payment`,
-      amount: plan.price,
-      currency: "USDC", // Base currency
+      template: "PRODUCT",
       product: {
-        name: `BeterCalls - ${plan.name}`,
+        name: plan.name,
         description: `Lifetime access to all ${plan.name} features on BeterCalls.`,
       },
-      customerDetails: {
-        email: true,
-        name: true,
+      price: priceBaseUnits,
+      pricingCurrency: "USDC",
+      features: {
+        recipients,
       },
-      // This is where Helio will send the user after a successful payment
       redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
-    }
+    };
 
-    return this.request("/pay", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
+    try {
+      // Pass API key as query param
+      const url = `${HELIO_API_URL}/v1/paylink/create/api-key?apiKey=${this.apiKey}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Helio API Error:", response.status, response.statusText, errorBody);
+        throw new Error(`Helio API Error: ${response.status} ${response.statusText} - ${errorBody}`);
+      }
+
+      const responseData = await response.json();
+      // The pay link URL is usually in responseData.url or responseData.payLinkUrl
+      return responseData;
+    } catch (error) {
+      console.error("Helio createOneTimePayLink failed:", error);
+      throw error;
+    }
   }
 }
 
