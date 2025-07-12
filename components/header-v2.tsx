@@ -24,7 +24,7 @@ export function HeaderV2({ user }: HeaderV2Props) {
           <Link href="/calls" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
             Calls
           </Link>
-          <Link href="#" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+          <Link href="/experts" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
             Experts
           </Link>
           <Link href="/#pricing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
@@ -81,7 +81,7 @@ export function HeaderV2({ user }: HeaderV2Props) {
                     </Link>
                   </SheetClose>
                   <SheetClose asChild>
-                    <Link href="#" className="text-lg font-medium">
+                    <Link href="/experts" className="text-lg font-medium">
                       Experts
                     </Link>
                   </SheetClose>

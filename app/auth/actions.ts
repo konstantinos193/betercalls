@@ -5,35 +5,94 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export async function signUp(formData: FormData) {
+  console.log("=== SIGN UP PROCESS STARTED ===")
+  
   const supabase = createSupabaseServerClient()
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  
+  console.log("Form data received:", { email: email ? "***" : "missing", password: password ? "***" : "missing" })
+  
   if (!email || !password) {
+    console.log("Missing email or password")
     return redirect("/sign-up?message=Email and password are required")
   }
-  const { error } = await supabase.auth.signUp({ email, password })
-  if (error) {
-    console.error("Sign up error:", error)
-    return redirect(`/sign-up?message=Could not authenticate user: ${error.message}`)
+  
+  console.log("Attempting to sign up user with email:", email)
+  console.log("Supabase client created successfully")
+  
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    
+    console.log("Sign up response received")
+    console.log("Data:", data ? "User data present" : "No user data")
+    console.log("Error:", error ? error.message : "No error")
+    
+    if (error) {
+      console.error("Sign up error details:", {
+        message: error.message,
+        status: error.status,
+        name: error.name
+      })
+      return redirect(`/sign-up?message=Could not authenticate user: ${error.message}`)
+    }
+    
+    console.log("Sign up successful, user created")
+    console.log("User ID:", data.user?.id)
+    console.log("Session:", data.session ? "Session created" : "No session")
+    
+    revalidatePath("/", "layout")
+    console.log("Redirecting to /calls")
+    redirect("/calls")
+  } catch (error) {
+    console.error("Unexpected error during sign up:", error)
+    return redirect(`/sign-up?message=Unexpected error during sign up`)
   }
-  revalidatePath("/", "layout")
-  redirect("/calls")
 }
 
 export async function signIn(formData: FormData) {
+  console.log("=== SIGN IN PROCESS STARTED ===")
+  
   const supabase = createSupabaseServerClient()
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  
+  console.log("Form data received:", { email: email ? "***" : "missing", password: password ? "***" : "missing" })
+  
   if (!email || !password) {
+    console.log("Missing email or password")
     return redirect("/login?message=Email and password are required")
   }
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) {
-    console.error("Sign in error:", error)
-    return redirect(`/login?message=Could not authenticate user: ${error.message}`)
+  
+  console.log("Attempting to sign in user with email:", email)
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    
+    console.log("Sign in response received")
+    console.log("Data:", data ? "User data present" : "No user data")
+    console.log("Error:", error ? error.message : "No error")
+    
+    if (error) {
+      console.error("Sign in error details:", {
+        message: error.message,
+        status: error.status,
+        name: error.name
+      })
+      return redirect(`/login?message=Could not authenticate user: ${error.message}`)
+    }
+    
+    console.log("Sign in successful")
+    console.log("User ID:", data.user?.id)
+    console.log("Session:", data.session ? "Session created" : "No session")
+    
+    revalidatePath("/", "layout")
+    console.log("Redirecting to /calls")
+    redirect("/calls")
+  } catch (error) {
+    console.error("Unexpected error during sign in:", error)
+    return redirect(`/login?message=Unexpected error during sign in`)
   }
-  revalidatePath("/", "layout")
-  redirect("/calls")
 }
 
 export async function signOut() {

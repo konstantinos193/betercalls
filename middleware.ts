@@ -2,6 +2,10 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
+  console.log("=== MIDDLEWARE EXECUTION ===")
+  console.log("Request pathname:", request.nextUrl.pathname)
+  console.log("Request method:", request.method)
+  
   const { supabase, response } = createSupabaseMiddlewareClient(request)
 
   // Refresh session if expired - required for Server Components
@@ -9,35 +13,50 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
+  console.log("Session status:", session ? "Active" : "No session")
+  if (session) {
+    console.log("User ID:", session.user.id)
+  }
+
   const { pathname } = request.nextUrl
 
   // If user is not logged in, redirect to login page
   if (!session) {
+    console.log("No session found, checking if protected route")
     if (pathname.startsWith("/calls") || pathname.startsWith("/admin") || pathname.startsWith("/account")) {
+      console.log("Redirecting to login page")
       const url = new URL(request.url)
       url.pathname = "/login"
       return NextResponse.redirect(url)
     }
+    console.log("Not a protected route, continuing")
     return response
   }
 
   // If user is logged in, check for active subscription to access /calls
   if (pathname.startsWith("/calls")) {
+    console.log("User accessing /calls, checking subscription status")
     const { data: profile } = await supabase
       .from("profiles")
       .select("subscription_status")
       .eq("id", session.user.id)
       .single()
 
+    console.log("Profile subscription status:", profile?.subscription_status)
+
     // If no profile or subscription is not active, redirect to pricing page
     if (profile?.subscription_status !== "active") {
+      console.log("No active subscription, redirecting to pricing")
       const url = new URL(request.url)
       url.pathname = "/"
       url.hash = "pricing" // Jump to the pricing section
       return NextResponse.redirect(url)
     }
+    
+    console.log("Subscription active, allowing access to /calls")
   }
 
+  console.log("Middleware completed successfully")
   return response
 }
 

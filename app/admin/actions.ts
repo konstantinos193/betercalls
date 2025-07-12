@@ -72,7 +72,7 @@ export async function savePlan(prevState: FormState, formData: FormData): Promis
     name: formData.get("name") as string,
     description: formData.get("description") as string,
     price: Number(formData.get("price")),
-    interval: formData.get("interval") as "monthly" | "annual",
+    interval: formData.get("interval") as "monthly" | "annual" | "lifetime",
     features: features,
     is_active: formData.get("is_active") === "on",
   }

@@ -81,6 +81,7 @@ export function PlanForm({ isOpen, onClose, plan }: PlanFormProps) {
                 <SelectContent>
                   <SelectItem value="monthly">Monthly</SelectItem>
                   <SelectItem value="annual">Annual</SelectItem>
+                  <SelectItem value="lifetime">Lifetime</SelectItem>
                 </SelectContent>
               </Select>
             </div>

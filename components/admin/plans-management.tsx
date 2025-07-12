@@ -52,7 +52,9 @@ export function PlansManagement({ plans }: { plans: Plan[] }) {
             </CardHeader>
             <CardContent className="flex-grow">
               <p className="text-3xl font-bold text-white">
-                €{plan.price} <span className="text-base font-normal text-gray-500">/{plan.interval}</span>
+                €{plan.price} <span className="text-base font-normal text-gray-500">
+                  {plan.interval === "monthly" ? "/mo" : plan.interval === "annual" ? "/yr" : " once"}
+                </span>
               </p>
               <ul className="mt-4 space-y-2 text-sm text-gray-300">
                 {(plan.features as string[])?.map((feature) => (

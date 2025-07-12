@@ -1,6 +1,6 @@
 "use server"
 
-import { helio } from "@/lib/helio"
+import { getHelioClient } from "@/lib/helio"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 
@@ -20,6 +20,7 @@ export async function createSubscription(planId: string) {
   }
 
   try {
+    const helio = getHelioClient()
     const response = await helio.createSubscriptionPayLink({
       name: plan.name,
       price: plan.price,

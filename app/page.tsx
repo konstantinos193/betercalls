@@ -143,7 +143,7 @@ export default async function CuttingEdgeLandingPage() {
                   <div className="mt-6 text-4xl font-bold text-white">
                     €{plan.price}{" "}
                     <span className="text-lg font-medium text-gray-500">
-                      / {plan.interval === "monthly" ? "mo" : "yr"}
+                      {plan.interval === "monthly" ? "/ mo" : plan.interval === "annual" ? "/ yr" : " once"}
                     </span>
                   </div>
                   <ul className="mt-8 space-y-4 text-gray-300 flex-grow">
@@ -157,7 +157,7 @@ export default async function CuttingEdgeLandingPage() {
                   <form action={createSubscriptionWithId}>
                     <Button
                       type="submit"
-                      className={`mt-8 w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300 ${plan.interval === "yearly" ? "" : "bg-transparent"}`}
+                      className="mt-8 w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300 transition-all duration-300"
                     >
                       Choose Plan
                     </Button>

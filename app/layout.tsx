@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "The ultimate edge in football betting. Get real-time, expert-driven calls and join a community of winners.",
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.svg",
   },
   openGraph: {
     title: "BeterCalls - Expert Football Betting Calls",

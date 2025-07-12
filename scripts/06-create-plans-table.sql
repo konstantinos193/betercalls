@@ -2,7 +2,7 @@
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'plan_interval') THEN
-        CREATE TYPE plan_interval AS ENUM ('monthly', 'annual');
+        CREATE TYPE plan_interval AS ENUM ('monthly', 'annual', 'lifetime');
     END IF;
 END$$;
 
@@ -40,5 +40,5 @@ SELECT 'Yearly', 'For the dedicated winner.', 100.00, 'eur', 'annual', '["All St
 WHERE NOT EXISTS (SELECT 1 FROM subscription_plans WHERE name = 'Yearly');
 
 INSERT INTO subscription_plans (name, description, price, currency, interval, features, is_active)
-SELECT 'Lifetime', 'All in. Forever.', 500.00, 'eur', 'monthly', '["Everything in Yearly", "Exclusive Expert Q&As"]', false
+SELECT 'Lifetime', 'All in. Forever.', 500.00, 'eur', 'lifetime', '["Everything in Yearly", "Exclusive Expert Q&As", "Lifetime Access"]', true
 WHERE NOT EXISTS (SELECT 1 FROM subscription_plans WHERE name = 'Lifetime');

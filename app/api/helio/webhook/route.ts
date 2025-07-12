@@ -91,6 +91,41 @@ export async function POST(request: Request) {
         break
       }
 
+      case "payment.succeeded": {
+        // Handle one-time payments for lifetime plans
+        const { customer, payment } = event.data
+
+        if (!customer || !customer.email || !payment || !payment.id) {
+          return NextResponse.json({ error: "Missing required data in webhook payload" }, { status: 400 })
+        }
+
+        // Find the user in your database by email
+        const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(customer.email)
+
+        if (userError || !user) {
+          console.error(`User with email ${customer.email} not found.`, userError)
+          return NextResponse.json({ error: "User not found" }, { status: 404 })
+        }
+
+        // Update the user's profile for lifetime access
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            subscription_status: "active",
+            subscription_tier: "lifetime",
+            helio_subscription_id: payment.id, // Store payment ID instead of subscription ID
+          })
+          .eq("id", user.user.id)
+
+        if (profileError) {
+          console.error("Failed to update user profile:", profileError)
+          return NextResponse.json({ error: "Failed to update user profile" }, { status: 500 })
+        }
+
+        console.log(`Successfully activated lifetime access for ${customer.email}`)
+        break
+      }
+
       case "subscription.cancelled": {
         const { subscription } = event.data
 

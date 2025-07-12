@@ -241,7 +241,7 @@ export type Database = {
     }
     Enums: {
       call_status: "Upcoming" | "Won" | "Lost" | "Push"
-      plan_interval: "monthly" | "annual"
+      plan_interval: "monthly" | "annual" | "lifetime"
     }
     CompositeTypes: {
       [_ in never]: never
