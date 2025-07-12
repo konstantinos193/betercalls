@@ -70,7 +70,18 @@ export default async function CheckoutPage({ params }: { params: { planId: strin
                 </div>
               </CardContent>
               <CardFooter>
-                <form action={createSubscriptionWithId} className="w-full">
+                <form 
+                  action={createSubscriptionWithId} 
+                  className="w-full"
+                  onSubmit={(e) => {
+                    console.log("Form submitted")
+                    const button = e.currentTarget.querySelector('button[type="submit"]')
+                    if (button) {
+                      button.textContent = "Processing..."
+                      button.setAttribute('disabled', 'true')
+                    }
+                  }}
+                >
                   <Button
                     type="submit"
                     size="lg"
