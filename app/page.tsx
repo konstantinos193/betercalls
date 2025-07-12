@@ -39,7 +39,11 @@ const tickerItems = [
   { id: 3, text: "NEW CALL: FOOTBALL: Lions ML vs Packers" },
 ]
 
-export default async function CuttingEdgeLandingPage() {
+export default async function CuttingEdgeLandingPage({
+  searchParams,
+}: {
+  searchParams: { error?: string }
+}) {
   const supabase = createSupabaseServerClient()
   const { data: plans } = await supabase.from("subscription_plans").select("*").eq("is_active", true).order("price")
 
@@ -47,6 +51,19 @@ export default async function CuttingEdgeLandingPage() {
     <div className="bg-[#0D0D0D] text-gray-200 font-sans">
       <SiteHeader />
       <LiveTicker items={tickerItems} />
+      
+      {/* Error Message */}
+      {searchParams.error && (
+        <div className="bg-red-500/20 border border-red-500/30 p-4 text-center">
+          <p className="text-red-400 font-semibold">
+            {searchParams.error === "payment-failed" 
+              ? "Payment setup failed. Please check your environment configuration or contact support."
+              : searchParams.error === "plan-not-found"
+              ? "Selected plan not found. Please try again."
+              : "An error occurred. Please try again."}
+          </p>
+        </div>
+      )}
 
       <main className="overflow-hidden">
         {/* Hero Section */}

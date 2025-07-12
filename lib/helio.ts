@@ -5,12 +5,19 @@ export class HelioClient {
 
   constructor() {
     this.apiKey = process.env.HELIO_SECRET_KEY || ""
+    console.log("=== HELIO CLIENT CONSTRUCTOR ===")
+    console.log("HELIO_SECRET_KEY present:", !!this.apiKey)
+    console.log("HELIO_SECRET_KEY length:", this.apiKey.length)
     if (!this.apiKey) {
       console.warn("HELIO_SECRET_KEY is not set in environment variables. Payment functionality will be disabled.")
     }
   }
 
   private async request(endpoint: string, options: RequestInit = {}) {
+    console.log("=== HELIO REQUEST ===")
+    console.log("Endpoint:", endpoint)
+    console.log("API Key present:", !!this.apiKey)
+    
     if (!this.apiKey) {
       throw new Error("Helio payment is not configured. Please set HELIO_SECRET_KEY environment variable.")
     }
@@ -21,17 +28,26 @@ export class HelioClient {
       Authorization: `Bearer ${this.apiKey}`,
     }
 
+    console.log("Request URL:", url)
+    console.log("Request method:", options.method || "GET")
+
     const response = await fetch(url, {
       ...options,
       headers: { ...headers, ...options.headers },
     })
 
+    console.log("Response status:", response.status)
+    console.log("Response ok:", response.ok)
+
     if (!response.ok) {
       const errorBody = await response.text()
+      console.error("Helio API Error:", response.status, response.statusText, errorBody)
       throw new Error(`Helio API Error: ${response.status} ${response.statusText} - ${errorBody}`)
     }
 
-    return response.json()
+    const responseData = await response.json()
+    console.log("Response data:", responseData)
+    return responseData
   }
 
   async createSubscriptionPayLink(plan: { name: string; price: number; interval: "monthly" | "annual" | "lifetime" }) {
