@@ -12,7 +12,8 @@ async function verifyHelioSignature(request: Request, body: any): Promise<boolea
     return true
   }
 
-  const signature = headers().get("helio-signature")
+  const headersList = await headers()
+  const signature = headersList.get("helio-signature")
   if (!signature) {
     console.warn("No Helio signature found on webhook request.")
     return false
@@ -64,23 +65,27 @@ export async function POST(request: Request) {
         }
 
         // 2. Find the user in your database by email
-        const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(customer.email)
+        const { data: user, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", customer.email)
+          .single()
 
         if (userError || !user) {
           console.error(`User with email ${customer.email} not found.`, userError)
           return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        // 3. Update the user's profile with subscription details
+        // 3. Update the user's subscription details
         const subscriptionTier = parseSubscriptionTier(subscription.name)
         const { error: profileError } = await supabase
-          .from("profiles")
+          .from("users")
           .update({
             subscription_status: "active",
             subscription_tier: subscriptionTier,
             helio_subscription_id: subscription.id,
           })
-          .eq("id", user.user.id)
+          .eq("id", user.id)
 
         if (profileError) {
           console.error("Failed to update user profile:", profileError)
@@ -100,22 +105,26 @@ export async function POST(request: Request) {
         }
 
         // Find the user in your database by email
-        const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(customer.email)
+        const { data: user, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", customer.email)
+          .single()
 
         if (userError || !user) {
           console.error(`User with email ${customer.email} not found.`, userError)
           return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        // Update the user's profile for lifetime access
+        // Update the user's subscription details for lifetime access
         const { error: profileError } = await supabase
-          .from("profiles")
+          .from("users")
           .update({
             subscription_status: "active",
             subscription_tier: "lifetime",
             helio_subscription_id: payment.id, // Store payment ID instead of subscription ID
           })
-          .eq("id", user.user.id)
+          .eq("id", user.id)
 
         if (profileError) {
           console.error("Failed to update user profile:", profileError)
@@ -135,7 +144,7 @@ export async function POST(request: Request) {
 
         // Find the user by their Helio subscription ID and update their status
         const { error: profileError } = await supabase
-          .from("profiles")
+          .from("users")
           .update({
             subscription_status: "cancelled",
           })

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware"
+import { getToken } from "next-auth/jwt"
 
 export async function middleware(request: NextRequest) {
   console.log("=== MIDDLEWARE EXECUTION ===")
@@ -9,29 +9,23 @@ export async function middleware(request: NextRequest) {
   console.log("Request URL:", request.url)
   
   try {
-    console.log("Creating Supabase middleware client...")
-    const { supabase, response } = createSupabaseMiddlewareClient(request)
-    console.log("Supabase middleware client created successfully")
+    // Get the token using NextAuth
+    const token = await getToken({ 
+      req: request, 
+      secret: process.env.NEXTAUTH_SECRET 
+    })
 
-    // Refresh session if expired - required for Server Components
-    console.log("Getting session...")
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    console.log("Session status:", session ? "Active" : "No session")
-    if (session) {
-      console.log("User ID:", session.user.id)
-      console.log("User email:", session.user.email)
-      console.log("Session access token:", session.access_token ? "Present" : "Missing")
-      console.log("Session refresh token:", session.refresh_token ? "Present" : "Missing")
+    console.log("Token status:", token ? "Active" : "No token")
+    if (token) {
+      console.log("User ID:", token.id)
+      console.log("User email:", token.email)
     }
 
   const { pathname } = request.nextUrl
 
   // If user is not logged in, redirect to login page
-  if (!session) {
-    console.log("No session found, checking if protected route")
+  if (!token) {
+    console.log("No token found, checking if protected route")
     if (pathname.startsWith("/calls") || pathname.startsWith("/account") || pathname.startsWith("/checkout")) {
       console.log("Redirecting to login page")
       const url = new URL(request.url)
@@ -45,21 +39,29 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
     console.log("Not a protected route, continuing")
-    return response
+    return NextResponse.next()
   }
 
   // Check admin access for standoda routes
   if (pathname.startsWith("/standoda")) {
     console.log("User accessing standoda route, checking admin status")
-    const { data: profile } = await supabase
-      .from("profiles")
+    
+    // Check admin status in users table
+    const { createClient } = await import("@supabase/supabase-js")
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    const { data: user } = await supabase
+      .from("users")
       .select("is_admin")
-      .eq("id", session.user.id)
+      .eq("email", token.email)
       .single()
 
-    console.log("User admin status:", profile?.is_admin)
+    console.log("User admin status:", user?.is_admin)
 
-    if (!profile?.is_admin) {
+    if (!user?.is_admin) {
       console.log("User is not an admin, redirecting to standoda login")
       const url = new URL(request.url)
       url.pathname = "/standoda/login"
@@ -72,16 +74,24 @@ export async function middleware(request: NextRequest) {
   // If user is logged in, check for active subscription to access /calls
   if (pathname.startsWith("/calls")) {
     console.log("User accessing /calls, checking subscription status")
-    const { data: profile } = await supabase
-      .from("profiles")
+    
+    // Check subscription status in users table
+    const { createClient } = await import("@supabase/supabase-js")
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    const { data: user } = await supabase
+      .from("users")
       .select("subscription_status")
-      .eq("id", session.user.id)
+      .eq("email", token.email)
       .single()
 
-    console.log("Profile subscription status:", profile?.subscription_status)
+    console.log("User subscription status:", user?.subscription_status)
 
-    // If no profile or subscription is not active, redirect to pricing page
-    if (profile?.subscription_status !== "active") {
+    // If no user or subscription is not active, redirect to pricing page
+    if (user?.subscription_status !== "active") {
       console.log("No active subscription, redirecting to pricing")
       const url = new URL(request.url)
       url.pathname = "/"
@@ -93,7 +103,7 @@ export async function middleware(request: NextRequest) {
   }
 
   console.log("Middleware completed successfully")
-  return response
+  return NextResponse.next()
   } catch (error: any) {
     console.error("=== MIDDLEWARE ERROR ===")
     console.error("Error type:", typeof error)

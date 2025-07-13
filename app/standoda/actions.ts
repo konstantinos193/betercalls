@@ -32,7 +32,7 @@ export async function createCall(prevState: FormState, formData: FormData) {
     expert_id: expertId,
     title,
     description,
-    status,
+    status: status as "Upcoming" | "Won" | "Lost" | "Push",
   })
 
   if (error) {
@@ -133,7 +133,7 @@ export async function savePlan(prevState: FormState, formData: FormData) {
     }
   }
 
-  const { error } = await supabase.from("plans").insert({
+  const { error } = await supabase.from("subscription_plans").insert({
     name,
     price: parseFloat(price),
     description,
@@ -156,7 +156,7 @@ export async function updateUserSubscription(userId: string, subscriptionStatus:
   const supabase = createSupabaseAdminClient()
   
   const { error } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ subscription_status: subscriptionStatus })
     .eq("id", userId)
 

@@ -14,7 +14,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { UserWithProfile } from "@/app/standoda/users/page"
+import type { Database } from "@/types/supabase"
+
+type User = Database["public"]["Tables"]["users"]["Row"]
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -28,20 +30,39 @@ function SubmitButton() {
 type EditSubscriptionModalProps = {
   isOpen: boolean
   onClose: () => void
-  user: UserWithProfile | null
+  user: User | null
 }
 
 export function EditSubscriptionModal({ isOpen, onClose, user }: EditSubscriptionModalProps) {
-  const initialState = { message: "", success: false }
-  const [state, dispatch] = useFormState(updateUserSubscription, initialState)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [message, setMessage] = React.useState("")
 
   React.useEffect(() => {
-    if (state.success) {
+    if (message && !isSubmitting) {
       onClose()
     }
-  }, [state, onClose])
+  }, [message, isSubmitting, onClose])
 
   if (!user) return null
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setMessage("")
+    
+    const formData = new FormData(e.currentTarget)
+    const userId = formData.get("userId") as string
+    const subscriptionStatus = formData.get("subscriptionStatus") as string
+    
+    try {
+      await updateUserSubscription(userId, subscriptionStatus)
+      setMessage("Subscription updated successfully!")
+    } catch (error) {
+      setMessage("Failed to update subscription")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -50,11 +71,11 @@ export function EditSubscriptionModal({ isOpen, onClose, user }: EditSubscriptio
           <DialogTitle>Edit Subscription</DialogTitle>
           <DialogDescription>Manually update the subscription status for {user.email}.</DialogDescription>
         </DialogHeader>
-        <form action={dispatch} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input type="hidden" name="userId" value={user.id} />
           <div className="space-y-2">
             <Label htmlFor="subscriptionStatus">Subscription Status</Label>
-            <Select name="subscriptionStatus" defaultValue={user.profile?.subscription_status || "inactive"}>
+            <Select name="subscriptionStatus" defaultValue={user.subscription_status || "inactive"}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -69,9 +90,11 @@ export function EditSubscriptionModal({ isOpen, onClose, user }: EditSubscriptio
             <Button variant="ghost" type="button" onClick={onClose}>
               Cancel
             </Button>
-            <SubmitButton />
+            <Button type="submit" disabled={isSubmitting} className="bg-cyan-400 text-black font-bold hover:bg-cyan-300">
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
-          {state.message && !state.success && <p className="text-sm text-red-400">{state.message}</p>}
+          {message && <p className="text-sm text-red-400">{message}</p>}
         </form>
       </DialogContent>
     </Dialog>

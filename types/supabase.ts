@@ -196,6 +196,80 @@ export type Database = {
           }
         ]
       }
+      users: {
+        Row: {
+          id: string
+          email: string
+          password_hash: string
+          name: string | null
+          avatar_url: string | null
+          is_admin: boolean
+          subscription_status: string | null
+          subscription_tier: string | null
+          helio_subscription_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          password_hash: string
+          name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          helio_subscription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          password_hash?: string
+          name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          helio_subscription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      password_reset_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          token: string
+          expires_at: string
+          used: boolean
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          token: string
+          expires_at: string
+          used?: boolean
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          token?: string
+          expires_at?: string
+          used?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "password_reset_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       discussions: {
         Row: {
           id: string

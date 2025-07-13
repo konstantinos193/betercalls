@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import type { UserWithProfile } from "@/app/standoda/users/page"
+import type { Database } from "@/types/supabase"
+
+type User = Database["public"]["Tables"]["users"]["Row"]
 import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { EditSubscriptionModal } from "./edit-subscription-modal"
@@ -19,17 +21,17 @@ const statusStyles: { [key: string]: string } = {
 
 const ITEMS_PER_PAGE = 10
 
-export function UsersTable({ users }: { users: UserWithProfile[] }) {
+export function UsersTable({ users }: { users: User[] }) {
   const [search, setSearch] = React.useState("")
   const [currentPage, setCurrentPage] = React.useState(1)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
-  const [selectedUser, setSelectedUser] = React.useState<UserWithProfile | null>(null)
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null)
 
   const filteredUsers = React.useMemo(() => {
     return users.filter(
       (user) =>
         user.email?.toLowerCase().includes(search.toLowerCase()) ||
-        user.profile?.full_name?.toLowerCase().includes(search.toLowerCase()),
+        user.name?.toLowerCase().includes(search.toLowerCase()),
     )
   }, [users, search])
 
@@ -48,7 +50,7 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
     }
   }
 
-  const handleEditClick = (user: UserWithProfile) => {
+  const handleEditClick = (user: User) => {
     setSelectedUser(user)
     setIsModalOpen(true)
   }
@@ -82,12 +84,12 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
               {paginatedUsers.map((user) => (
                 <TableRow key={user.id} className="border-gray-800/50">
                   <TableCell className="font-medium">{user.email}</TableCell>
-                  <TableCell>{user.profile?.full_name || "N/A"}</TableCell>
+                  <TableCell>{user.name || "N/A"}</TableCell>
                   <TableCell>
                     <Badge
-                      className={cn("border capitalize", statusStyles[user.profile?.subscription_status || "inactive"])}
+                      className={cn("border capitalize", statusStyles[user.subscription_status || "inactive"])}
                     >
-                      {user.profile?.subscription_status || "inactive"}
+                      {user.subscription_status || "inactive"}
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>

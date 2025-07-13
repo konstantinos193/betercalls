@@ -21,11 +21,7 @@ export function HeaderV2() {
   const { data: session, status } = useSession()
   const user = session?.user
   
-  console.log("HeaderV2 - Session status:", status)
-  console.log("HeaderV2 - Session data:", session)
-  console.log("HeaderV2 - User:", user)
-  console.log("HeaderV2 - User truthy check:", !!user)
-  console.log("HeaderV2 - Should show logged in UI:", !!user)
+
   return (
     <header key={user?.id || 'no-user'} className="sticky top-0 z-50 w-full bg-[#0D0D0D]/80 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -49,7 +45,6 @@ export function HeaderV2() {
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
-              <span className="text-green-400 text-sm">LOGGED IN: {user.name}</span>
               <Button asChild variant="ghost" className="text-gray-300 hover:bg-gray-800 hover:text-white">
                 <Link href="/account">My Account</Link>
               </Button>
