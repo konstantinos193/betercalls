@@ -16,10 +16,19 @@ export default async function CheckoutPage({ params }: { params: { planId: strin
     notFound()
   }
 
+  // Check authentication
+  const supabase = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login?message=Please log in to subscribe")
+  }
+
   let plan: any = null
 
   try {
-    const supabase = createSupabaseServerClient()
 
     const { data, error } = await supabase
       .from("subscription_plans")

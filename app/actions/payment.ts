@@ -2,6 +2,7 @@
 
 import { getHelioClient } from "@/lib/helio"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
 export async function createSubscription(planId: string) {
@@ -15,6 +16,19 @@ export async function createSubscription(planId: string) {
   console.log("Plan ID:", planId)
   console.log("Timestamp:", new Date().toISOString())
   console.log("Environment check - HELIO_SECRET_KEY present:", !!process.env.HELIO_SECRET_KEY)
+  
+  // Check authentication
+  const supabaseServer = createSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabaseServer.auth.getUser()
+
+  if (!user) {
+    console.error("User not authenticated")
+    redirect("/login?message=Please log in to subscribe")
+  }
+
+  console.log("User authenticated:", user.id)
   
   let plan: any = null
   let planError: any = null

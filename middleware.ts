@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   // If user is not logged in, redirect to login page
   if (!session) {
     console.log("No session found, checking if protected route")
-    if (pathname.startsWith("/calls") || pathname.startsWith("/account")) {
+    if (pathname.startsWith("/calls") || pathname.startsWith("/account") || pathname.startsWith("/checkout")) {
       console.log("Redirecting to login page")
       const url = new URL(request.url)
       url.pathname = "/login"
