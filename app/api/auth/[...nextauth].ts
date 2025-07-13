@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const authOptions = {
+export const config = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
@@ -84,5 +84,5 @@ export const authOptions = {
   }
 };
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);
+export const { handlers, auth, signIn, signOut } = NextAuth(config);
 export { handlers as GET, handlers as POST }; 
