@@ -5,10 +5,15 @@ import { PlansManagement } from "@/components/admin/plans-management"
 export default async function PlansPage() {
   const supabase = createSupabaseAdminClient()
   
-  const { data: plans } = await supabase
-    .from("plans")
+  const { data: plans, error } = await supabase
+    .from("subscription_plans")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching plans:", error)
+    return <p className="text-red-400">Error fetching plans: {error.message}</p>
+  }
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">

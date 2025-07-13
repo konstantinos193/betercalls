@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import type { Database } from "@/types/supabase"
 
 export type FormState = {
   message?: string
@@ -12,17 +13,26 @@ export async function createCall(prevState: FormState, formData: FormData) {
   const supabase = createSupabaseAdminClient()
   
   const expertId = formData.get("expertId") as string
-  const title = formData.get("title") as string
-  const description = formData.get("description") as string
+  const betType = formData.get("betType") as string
+  const matchHomeTeam = formData.get("matchHomeTeam") as string
+  const matchAwayTeam = formData.get("matchAwayTeam") as string
+  const odds = formData.get("odds") as string
+  const pick = formData.get("pick") as string
+  const units = formData.get("units") as string
+  const analysis = formData.get("analysis") as string
   const status = formData.get("status") as string
 
-  if (!expertId || !title || !description || !status) {
+  if (!expertId || !betType || !matchHomeTeam || !matchAwayTeam || !odds || !pick || !units || !status) {
     return {
       message: "All fields are required",
       errors: {
         expertId: ["Expert is required"],
-        title: ["Title is required"],
-        description: ["Description is required"],
+        betType: ["Bet type is required"],
+        matchHomeTeam: ["Home team is required"],
+        matchAwayTeam: ["Away team is required"],
+        odds: ["Odds are required"],
+        pick: ["Pick is required"],
+        units: ["Units are required"],
         status: ["Status is required"],
       },
     }
@@ -30,9 +40,14 @@ export async function createCall(prevState: FormState, formData: FormData) {
 
   const { error } = await supabase.from("calls").insert({
     expert_id: expertId,
-    title,
-    description,
-    status: status as "Upcoming" | "Won" | "Lost" | "Push",
+    bet_type: betType,
+    match_home_team: matchHomeTeam,
+    match_away_team: matchAwayTeam,
+    odds,
+    pick,
+    units: parseFloat(units),
+    analysis: analysis || null,
+    status: status as Database["public"]["Enums"]["call_status"],
   })
 
   if (error) {
@@ -118,30 +133,58 @@ export async function deleteExpert(expertId: string) {
 export async function savePlan(prevState: FormState, formData: FormData) {
   const supabase = createSupabaseAdminClient()
   
+  const id = formData.get("id") as string
   const name = formData.get("name") as string
   const price = formData.get("price") as string
   const description = formData.get("description") as string
+  const interval = formData.get("interval") as string
+  const features = formData.get("features") as string
+  const is_active = formData.get("is_active") === "on"
 
-  if (!name || !price || !description) {
+  if (!name || !price || !description || !interval) {
     return {
       message: "All fields are required",
       errors: {
         name: ["Name is required"],
         price: ["Price is required"],
         description: ["Description is required"],
+        interval: ["Interval is required"],
       },
     }
   }
 
-  const { error } = await supabase.from("subscription_plans").insert({
+  // Parse features from textarea (one per line)
+  const featuresArray = features ? features.split('\n').filter(f => f.trim()) : []
+
+  const planData = {
     name,
     price: parseFloat(price),
     description,
-  })
+    interval: interval as "monthly" | "annual" | "lifetime",
+    features: featuresArray,
+    is_active,
+    currency: "EUR"
+  }
+
+  let error
+  if (id) {
+    // Update existing plan
+    const { error: updateError } = await supabase
+      .from("subscription_plans")
+      .update(planData)
+      .eq("id", id)
+    error = updateError
+  } else {
+    // Create new plan
+    const { error: insertError } = await supabase
+      .from("subscription_plans")
+      .insert(planData)
+    error = insertError
+  }
 
   if (error) {
     return {
-      message: "Failed to create plan",
+      message: "Failed to save plan",
       errors: {
         _form: [error.message],
       },
@@ -149,7 +192,7 @@ export async function savePlan(prevState: FormState, formData: FormData) {
   }
 
   revalidatePath("/standoda/plans")
-  return { message: "Plan created successfully" }
+  return { message: id ? "Plan updated successfully" : "Plan created successfully", success: true }
 }
 
 export async function updateUserSubscription(userId: string, subscriptionStatus: string) {
