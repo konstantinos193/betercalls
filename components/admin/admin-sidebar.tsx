@@ -3,15 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Shield, LayoutDashboard, Megaphone, Users, Settings, CreditCard } from "lucide-react"
+import { Shield, LayoutDashboard, Megaphone, Users, Settings, AppWindow } from "lucide-react"
 
 const navItems = [
-  { href: "/standoda", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/standoda/calls", label: "Calls", icon: Megaphone },
-  { href: "/standoda/experts", label: "Experts", icon: Users },
-  { href: "/standoda/users", label: "Users", icon: Users },
-  { href: "/standoda/plans", label: "Plans", icon: CreditCard },
-  { href: "/standoda/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/calls", label: "Calls", icon: Megaphone },
+  { href: "/admin/categories", label: "Categories", icon: AppWindow },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
 export function AdminSidebar() {
