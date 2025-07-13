@@ -30,7 +30,7 @@ export default function LoginPage() {
         redirect: false
       });
       if (loginRes?.error) throw new Error(loginRes.error);
-      router.push("/account");
+      router.push("/calls");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {

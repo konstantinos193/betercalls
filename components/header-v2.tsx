@@ -3,8 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Zap, Menu } from "lucide-react"
-import type { User } from "@supabase/supabase-js"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 
 function SignOutButton() {
   return (
@@ -18,11 +17,9 @@ function SignOutButton() {
   )
 }
 
-type HeaderV2Props = {
-  user: User | null
-}
-
-export function HeaderV2({ user }: HeaderV2Props) {
+export function HeaderV2() {
+  const { data: session } = useSession()
+  const user = session?.user
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0D0D0D]/80 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
