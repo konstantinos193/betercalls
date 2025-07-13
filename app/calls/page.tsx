@@ -1,7 +1,7 @@
 import { CallsCommandCenter } from "@/components/calls-command-center"
 import { SiteHeader } from "@/components/site-header"
 import type { Call } from "@/types/calls"
-import { auth } from "next-auth";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
