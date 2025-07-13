@@ -1,11 +1,11 @@
 import { PAYMENT_TOKENS } from "@/lib/payment-tokens";
 
 const WALLET_ADDRESSES: Record<string, string> = {
-  BTC: process.env.BTC_WALLET_ADDRESS || "",
-  SOL: process.env.SOL_WALLET_ADDRESS || "",
-  ETH: process.env.ETH_WALLET_ADDRESS || "",
-  USDC: process.env.USDC_WALLET_ADDRESS || "",
-  USDT: process.env.USDT_WALLET_ADDRESS || "",
+  BTC: process.env.BTC_WALLET_ADDRESS || "bc1q3tfcwm2rxjwm9aj76x60gphpt9pglnl4rs3406",
+  SOL: process.env.SOL_WALLET_ADDRESS || "7sHE15Cv8UeVj68F9MYpAZBife1TjZQUisCuNdyEpBwp",
+  ETH: process.env.ETH_WALLET_ADDRESS || "0x79a2Dd0fCC27879fC258e81310670f0508Aa21BA",
+  USDC: process.env.USDC_WALLET_ADDRESS || "7sHE15Cv8UeVj68F9MYpAZBife1TjZQUisCuNdyEpBwp",
+  USDT: process.env.USDT_WALLET_ADDRESS || "7sHE15Cv8UeVj68F9MYpAZBife1TjZQUisCuNdyEpBwp",
 };
 
 const HELIO_API_URL = "https://api.hel.io/v1"
@@ -32,14 +32,19 @@ export class HelioClient {
       throw new Error("Helio payment is not configured. Please set HELIO_SECRET_KEY environment variable.")
     }
 
-    // Add API key as query parameter for Helio API
-    const url = `${HELIO_API_URL}${endpoint}?apiKey=${this.apiKey}`
+    // Use API key in headers instead of query parameter
+    const url = `${HELIO_API_URL}${endpoint}`
     const headers = {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${this.apiKey}`,
     }
 
     console.log("Request URL:", url)
     console.log("Request method:", options.method || "GET")
+    console.log("Request headers:", headers)
+    if (options.body) {
+      console.log("Request body:", options.body)
+    }
 
     const response = await fetch(url, {
       ...options,
