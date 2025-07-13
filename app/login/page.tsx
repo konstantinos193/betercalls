@@ -24,12 +24,15 @@ export default function LoginPage() {
     const email = form.email.value;
     const password = form.password.value;
     try {
+      console.log("Attempting login with:", { email, password: "***" });
       const loginRes = await signIn("credentials", {
         email,
         password,
         redirect: false
       });
+      console.log("Login response:", loginRes);
       if (loginRes?.error) throw new Error(loginRes.error);
+      console.log("Login successful, redirecting to /calls");
       router.push("/calls");
     } catch (err: any) {
       setError(err.message || "Login failed");

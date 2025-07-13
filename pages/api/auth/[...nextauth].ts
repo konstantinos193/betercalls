@@ -52,11 +52,13 @@ export default NextAuth({
 
         console.log("Password valid, returning user");
         // 3. Return user object (omit password_hash)
-        return { 
+        const userObject = { 
           id: user.id, 
           name: user.name, 
           email: user.email 
         };
+        console.log("Returning user object:", userObject);
+        return userObject;
       }
     })
   ],
