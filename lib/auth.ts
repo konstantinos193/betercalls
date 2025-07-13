@@ -84,4 +84,4 @@ export const authOptions = {
   }
 };
 
-export const { auth, handlers } = NextAuth(authOptions); 
+export const { auth } = NextAuth(authOptions); 
