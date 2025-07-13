@@ -8,7 +8,7 @@ import Link from "next/link"
 import { UpdatePasswordForm } from "@/components/update-password-form"
 import { UpdateProfileForm } from "@/components/update-profile-form"
 import { AvatarUploadForm } from "@/components/avatar-upload-form"
-import { auth } from "@/app/api/auth/[...nextauth]"
+import { auth } from "next-auth";
 import { redirect } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
 
