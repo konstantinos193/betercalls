@@ -7,7 +7,7 @@ import type { Call } from "@/types/calls"
 import { User, Users } from "lucide-react"
 import { StatCard } from "@/components/expert-stat-card"
 import { FollowButton } from "@/components/follow-button"
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
 import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = 'force-dynamic'
