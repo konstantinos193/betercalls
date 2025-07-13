@@ -11,6 +11,11 @@ export default async function StandodaPage() {
     .order("created_at", { ascending: false })
     .limit(10)
 
+  const { data: experts } = await supabase
+    .from("experts")
+    .select("*")
+    .order("name", { ascending: true })
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -21,7 +26,7 @@ export default async function StandodaPage() {
           <RecentCallsTable calls={calls || []} />
         </div>
         <div className="col-span-3">
-          <PostCallForm />
+          <PostCallForm experts={experts || []} />
         </div>
       </div>
     </div>
