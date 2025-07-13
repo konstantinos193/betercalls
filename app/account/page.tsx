@@ -59,7 +59,7 @@ export default async function AccountPage() {
                 variant="outline"
                 className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black bg-transparent"
               >
-                <Link href="#">Manage Subscription</Link>
+                <Link href="/account/subscription">Manage Subscription</Link>
               </Button>
             </CardFooter>
           </Card>
