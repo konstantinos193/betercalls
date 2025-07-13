@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useFormState, useFormStatus } from "react-dom"
-import { updateUserSubscription } from "@/app/admin/actions"
+import { updateUserSubscription } from "@/app/standoda/actions"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -14,7 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { UserWithProfile } from "@/app/admin/users/page"
+import type { UserWithProfile } from "@/app/standoda/users/page"
 
 function SubmitButton() {
   const { pending } = useFormStatus()

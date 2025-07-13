@@ -5,7 +5,7 @@ import { MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { updateCallStatus } from "@/app/admin/actions"
+import { updateCallStatus } from "@/app/standoda/actions"
 
 const statusStyles = {
   Upcoming: "bg-blue-500/20 text-blue-400 border-blue-500/30",

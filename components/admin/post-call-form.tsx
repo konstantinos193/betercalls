@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useFormState, useFormStatus } from "react-dom"
-import { createCall, type FormState } from "@/app/admin/actions"
+import { createCall, type FormState } from "@/app/standoda/actions"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

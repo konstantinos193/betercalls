@@ -36,7 +36,8 @@ export default function SignUpPage() {
       const loginRes = await signIn("credentials", {
         email,
         password,
-        redirect: false
+        redirect: false,
+        callbackUrl: "/account"
       });
       if (loginRes?.error) throw new Error(loginRes.error);
       router.push("/account");

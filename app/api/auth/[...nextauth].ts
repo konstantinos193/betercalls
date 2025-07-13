@@ -9,6 +9,7 @@ const supabase = createClient(
 );
 
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -17,6 +18,10 @@ export const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        
         // 1. Look up user by email
         const { data: user, error } = await supabase
           .from("users")
@@ -24,7 +29,7 @@ export const authOptions = {
           .eq("email", credentials.email)
           .single();
 
-        if (!user) return null;
+        if (error || !user) return null;
 
         // 2. Compare password hash
         const isValid = await bcrypt.compare(credentials.password, user.password_hash);
@@ -40,7 +45,26 @@ export const authOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/api/auth/error",
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+      }
+      return session;
+    }
+  }
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);

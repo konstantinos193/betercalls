@@ -38,19 +38,19 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/login"
       return NextResponse.redirect(url)
     }
-    if (pathname.startsWith("/admin")) {
-      console.log("Redirecting to admin login page")
+    if (pathname.startsWith("/standoda")) {
+      console.log("Redirecting to standoda login page")
       const url = new URL(request.url)
-      url.pathname = "/admin/login"
+      url.pathname = "/standoda/login"
       return NextResponse.redirect(url)
     }
     console.log("Not a protected route, continuing")
     return response
   }
 
-  // Check admin access for admin routes
-  if (pathname.startsWith("/admin")) {
-    console.log("User accessing admin route, checking admin status")
+  // Check admin access for standoda routes
+  if (pathname.startsWith("/standoda")) {
+    console.log("User accessing standoda route, checking admin status")
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")
@@ -60,9 +60,9 @@ export async function middleware(request: NextRequest) {
     console.log("User admin status:", profile?.is_admin)
 
     if (!profile?.is_admin) {
-      console.log("User is not an admin, redirecting to admin login")
+      console.log("User is not an admin, redirecting to standoda login")
       const url = new URL(request.url)
-      url.pathname = "/admin/login"
+      url.pathname = "/standoda/login"
       return NextResponse.redirect(url)
     }
     
