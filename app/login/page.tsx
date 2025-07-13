@@ -32,8 +32,8 @@ export default function LoginPage() {
       });
       console.log("Login response:", loginRes);
       if (loginRes?.error) throw new Error(loginRes.error);
-      console.log("Login successful, redirecting to /calls");
-      router.push("/calls");
+      console.log("Login successful, redirecting to homepage");
+      router.push("/");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
