@@ -18,11 +18,13 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    console.log("Form submitted");
     setError("");
     setLoading(true);
     const form = e.currentTarget;
     const email = form.email.value;
     const password = form.password.value;
+    console.log("Form data:", { email, password: password ? "***" : "empty" });
     try {
       console.log("Attempting login with:", { email, password: "***" });
       const loginRes = await signIn("credentials", {
@@ -32,8 +34,8 @@ export default function LoginPage() {
       });
       console.log("Login response:", loginRes);
       if (loginRes?.error) throw new Error(loginRes.error);
-      console.log("Login successful, redirecting to homepage");
-      router.push("/");
+      console.log("Login successful, redirecting to calls page");
+      router.push("/calls");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {

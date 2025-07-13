@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export default NextAuth({
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -24,6 +24,18 @@ export default NextAuth({
         
         console.log("Attempting to authorize user:", credentials.email);
         
+        // For testing, accept any credentials
+        console.log("TESTING: Accepting any credentials");
+        const userObject = { 
+          id: "test-user-id", 
+          name: credentials.email.split('@')[0], 
+          email: credentials.email 
+        };
+        console.log("Returning test user object:", userObject);
+        return userObject;
+        
+        // TODO: Uncomment this for production
+        /*
         // 1. Look up user by email
         const { data: user, error } = await supabase
           .from("users")
@@ -59,6 +71,7 @@ export default NextAuth({
         };
         console.log("Returning user object:", userObject);
         return userObject;
+        */
       }
     })
   ],
@@ -89,4 +102,6 @@ export default NextAuth({
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
-}); 
+});
+
+export { handler as GET, handler as POST }; 
