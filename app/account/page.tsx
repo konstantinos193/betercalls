@@ -8,17 +8,18 @@ import Link from "next/link"
 import { UpdatePasswordForm } from "@/components/update-password-form"
 import { UpdateProfileForm } from "@/components/update-profile-form"
 import { AvatarUploadForm } from "@/components/avatar-upload-form"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AccountPage() {
-  const session = await auth()
+  const session = await getServerSession()
   if (!session?.user) {
     redirect("/login")
   }
+  
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

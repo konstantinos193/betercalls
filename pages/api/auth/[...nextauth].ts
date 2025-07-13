@@ -8,8 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const authOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+export default NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -53,19 +52,24 @@ export const authOptions = {
 
         console.log("Password valid, returning user");
         // 3. Return user object (omit password_hash)
-        return { id: user.id, name: user.name, email: user.email };
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email 
+        };
       }
     })
   ],
   session: {
-    strategy: "jwt" as const
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/login",
     error: "/api/auth/error",
   },
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
@@ -73,7 +77,7 @@ export const authOptions = {
       }
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
@@ -81,7 +85,6 @@ export const authOptions = {
       }
       return session;
     }
-  }
-};
-
-export const { auth } = NextAuth(authOptions); 
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+}); 
