@@ -2,19 +2,17 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { getServerSession } from "next-auth/next"
 
 export async function followExpert(expertId: string) {
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getServerSession()
+  if (!session?.user) {
     throw new Error("You must be logged in to follow an expert.")
   }
 
+  const supabase = createSupabaseServerClient()
   const { error } = await supabase.from("expert_followers").insert({
-    user_id: user.id,
+    user_id: session.user.id,
     expert_id: expertId,
   })
 
@@ -27,16 +25,13 @@ export async function followExpert(expertId: string) {
 }
 
 export async function unfollowExpert(expertId: string) {
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getServerSession()
+  if (!session?.user) {
     throw new Error("You must be logged in to unfollow an expert.")
   }
 
-  const { error } = await supabase.from("expert_followers").delete().eq("user_id", user.id).eq("expert_id", expertId)
+  const supabase = createSupabaseServerClient()
+  const { error } = await supabase.from("expert_followers").delete().eq("user_id", session.user.id).eq("expert_id", expertId)
 
   if (error) {
     console.error("Error unfollowing expert:", error)

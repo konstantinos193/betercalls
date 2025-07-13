@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { getServerSession } from "next-auth/next"
 
 export type FormState = {
   message: string
@@ -9,13 +10,8 @@ export type FormState = {
 }
 
 export async function addComment(callId: string, prevState: FormState, formData: FormData): Promise<FormState> {
-  const supabase = createSupabaseServerClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getServerSession()
+  if (!session?.user) {
     return { message: "You must be logged in to comment.", success: false }
   }
 
@@ -24,9 +20,10 @@ export async function addComment(callId: string, prevState: FormState, formData:
     return { message: "Comment cannot be empty.", success: false }
   }
 
+  const supabase = createSupabaseServerClient()
   const { error } = await supabase.from("discussions").insert({
     call_id: callId,
-    user_id: user.id,
+    user_id: session.user.id,
     content: content,
   })
 
