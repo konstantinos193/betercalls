@@ -177,21 +177,7 @@ export default async function SubscriptionPage() {
             </CardContent>
           </Card>
 
-          {/* Support */}
-          <Card className="w-full bg-black/30 border-gray-800/50">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Need Help?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300 mb-4">
-                If you have questions about your subscription or need to make changes, 
-                please contact our support team.
-              </p>
-              <Button variant="outline" className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
-                Contact Support
-              </Button>
-            </CardContent>
-          </Card>
+
         </div>
       </main>
       <FooterV2 />

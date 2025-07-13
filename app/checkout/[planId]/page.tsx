@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { CheckCircle, ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react"
 import { createSubscription } from "@/app/actions/payment"
+import { getServerSession } from "next-auth/next"
 
 // Force dynamic rendering for this page since it fetches data from database
 export const dynamic = 'force-dynamic'
@@ -16,20 +17,16 @@ export default async function CheckoutPage({ params }: { params: { planId: strin
     notFound()
   }
 
-  // Check authentication
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  // Check authentication using NextAuth
+  const session = await getServerSession()
+  if (!session?.user) {
     redirect("/login?message=Please log in to subscribe")
   }
 
   let plan: any = null
 
   try {
-
+    const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from("subscription_plans")
       .select("*")
