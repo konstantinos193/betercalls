@@ -1,8 +1,7 @@
 import { CallsCommandCenter } from "@/components/calls-command-center"
 import { SiteHeader } from "@/components/site-header"
 import type { Call } from "@/types/calls"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../api/auth/[...nextauth]"
+import { auth } from "@/app/api/auth/[...nextauth]"
 import { redirect } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +20,7 @@ function formatDistanceToNow(dateString: string) {
 }
 
 export default async function CallsPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }

@@ -8,15 +8,14 @@ import Link from "next/link"
 import { UpdatePasswordForm } from "@/components/update-password-form"
 import { UpdateProfileForm } from "@/components/update-profile-form"
 import { AvatarUploadForm } from "@/components/avatar-upload-form"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../api/auth/[...nextauth]"
+import { auth } from "@/app/api/auth/[...nextauth]"
 import { redirect } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AccountPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }

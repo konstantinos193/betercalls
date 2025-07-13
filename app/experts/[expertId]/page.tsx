@@ -7,8 +7,7 @@ import type { Call } from "@/types/calls"
 import { User, Users } from "lucide-react"
 import { StatCard } from "@/components/expert-stat-card"
 import { FollowButton } from "@/components/follow-button"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../../api/auth/[...nextauth]"
+import { auth } from "@/app/api/auth/[...nextauth]"
 import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = 'force-dynamic'
@@ -27,7 +26,7 @@ function formatDistanceToNow(dateString: string) {
 }
 
 export default async function ExpertProfilePage({ params }: { params: { expertId: string } }) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }
