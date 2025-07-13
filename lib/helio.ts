@@ -1,4 +1,5 @@
 import { PAYMENT_TOKENS } from "@/lib/payment-tokens";
+import { getTokenPrices, convertEuroToToken } from "@/lib/price-conversion";
 
 const WALLET_ADDRESSES: Record<string, string> = {
   BTC: process.env.BTC_WALLET_ADDRESS || "bc1q3tfcwm2rxjwm9aj76x60gphpt9pglnl4rs3406",
@@ -32,11 +33,11 @@ export class HelioClient {
       throw new Error("Helio payment is not configured. Please set HELIO_SECRET_KEY environment variable.")
     }
 
-    // Use API key in headers instead of query parameter
+    // Use JWT token in Authorization header for Helio API
     const url = `${HELIO_API_URL}${endpoint}`
     const headers = {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${this.apiKey}`,
+      "Authorization": `Bearer ${this.apiKey}`, // This is a JWT token
     }
 
     console.log("Request URL:", url)
@@ -71,31 +72,18 @@ export class HelioClient {
       return this.createOneTimePayLink(plan)
     }
 
-    // For monthly/annual plans, create a subscription pay link using the SUBSCRIPTION template
-    // Convert price to base units (USDC has 6 decimals)
-    const priceBaseUnits = (plan.price * 1_000_000).toString();
-
-    // Recipients: all supported tokens
-    const recipients = PAYMENT_TOKENS.map(token => ({
-      currencyId: token.id,
-      walletId: WALLET_ADDRESSES[token.symbol] || "",
-    }));
+    // Get real-time token prices
+    const { tokenPrices } = await getTokenPrices()
+    
+    // Use USDC for subscription payments (most stable)
+    const usdcAmount = convertEuroToToken(plan.price, 'USDC', tokenPrices)
+    const priceBaseUnits = (usdcAmount * 1_000_000).toString(); // USDC has 6 decimals
 
     const payload = {
       template: "SUBSCRIPTION",
-      product: {
-        name: `${plan.name} Subscription`,
-        description: `Access to all ${plan.name} features on BeterCalls.`,
-      },
+      name: `${plan.name} Subscription`,
       price: priceBaseUnits,
-      pricingCurrency: PAYMENT_TOKENS.find(t => t.symbol === "USDC")?.id || recipients[0].currencyId,
-      features: {},
-      recipients,
-      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
-      subscriptionDetails: {
-        interval: plan.interval === "monthly" ? "MONTHLY" : "YEARLY",
-        description: `${plan.name} subscription on BeterCalls`,
-      },
+      pricingCurrency: "6812817fcf4943d0f0e4d5a1", // USDC currency ID from Helio API
     };
 
     return this.request("/paylink/create/api-key", {
@@ -105,26 +93,18 @@ export class HelioClient {
   }
 
   async createOneTimePayLink(plan: { name: string; price: number; interval: string }) {
-    // Convert price to base units (USDC has 6 decimals)
-    const priceBaseUnits = (plan.price * 1_000_000).toString();
-
-    // Recipients: all supported tokens
-    const recipients = PAYMENT_TOKENS.map(token => ({
-      currencyId: token.id,
-      walletId: WALLET_ADDRESSES[token.symbol] || "",
-    }));
+    // Get real-time token prices
+    const { tokenPrices } = await getTokenPrices()
+    
+    // Use USDC for one-time payments (most stable)
+    const usdcAmount = convertEuroToToken(plan.price, 'USDC', tokenPrices)
+    const priceBaseUnits = (usdcAmount * 1_000_000).toString(); // USDC has 6 decimals
 
     const payload = {
       template: "PRODUCT",
-      product: {
-        name: plan.name,
-        description: `Access to all ${plan.name} features on BeterCalls.`,
-      },
+      name: plan.name,
       price: priceBaseUnits,
-      pricingCurrency: PAYMENT_TOKENS.find(t => t.symbol === "USDC")?.id || recipients[0].currencyId,
-      features: {},
-      recipients,
-      redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://betercalls.com"}/calls`,
+      pricingCurrency: "6812817fcf4943d0f0e4d5a1", // USDC currency ID from Helio API
     };
 
     return this.request("/paylink/create/api-key", {
