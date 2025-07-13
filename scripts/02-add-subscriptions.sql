@@ -26,3 +26,20 @@ CREATE POLICY "Users can update their own profile." ON profiles
 
 -- Ensure the subscription_status column has a default value
 ALTER TABLE profiles ALTER COLUMN subscription_status SET DEFAULT 'inactive';
+
+-- Create users table for custom NextAuth.js authentication
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  name TEXT
+);
+
+-- Create password_reset_tokens table for custom password reset flow
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT FALSE
+);

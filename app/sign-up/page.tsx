@@ -5,9 +5,46 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
 import { Zap } from "lucide-react"
-import { signUp, resendConfirmationEmail } from "@/app/auth/actions"
+import { useState } from "react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
-export default function SignUpPage({ searchParams }: { searchParams: { message: string } }) {
+export default function SignUpPage() {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const form = e.currentTarget;
+    const email = form.email.value;
+    const password = form.password.value;
+    const name = form.name.value;
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Sign up failed");
+      // Auto-login after signup
+      const loginRes = await signIn("credentials", {
+        email,
+        password,
+        redirect: false
+      });
+      if (loginRes?.error) throw new Error(loginRes.error);
+      router.push("/account");
+    } catch (err: any) {
+      setError(err.message || "Sign up failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="bg-[#0D0D0D] text-gray-200 font-sans min-h-screen flex flex-col">
       <SiteHeader />
@@ -21,8 +58,19 @@ export default function SignUpPage({ searchParams }: { searchParams: { message: 
             <CardTitle className="text-2xl font-bold text-white">Create an Account</CardTitle>
             <CardDescription className="text-gray-400">Join the winning team today.</CardDescription>
           </CardHeader>
-          <form action={signUp}>
+          <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Your Name"
+                  required
+                  className="bg-gray-900/80 border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -46,30 +94,10 @@ export default function SignUpPage({ searchParams }: { searchParams: { message: 
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300">Create Account</Button>
-              {searchParams.message && <p className="text-center text-sm text-red-400">{searchParams.message}</p>}
-              
-              {/* Resend confirmation form - show when email confirmation is needed */}
-              {searchParams.message && searchParams.message.includes("confirm your account") && (
-                <div className="w-full border-t border-gray-700 pt-4">
-                  <p className="text-center text-sm text-gray-400 mb-3">
-                    Didn't receive the confirmation email?
-                  </p>
-                  <form action={resendConfirmationEmail} className="space-y-3">
-                    <Input
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      className="bg-gray-900/80 border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
-                    />
-                    <Button type="submit" variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-800">
-                      Resend Confirmation Email
-                    </Button>
-                  </form>
-                </div>
-              )}
-              
+              <Button className="w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300" disabled={loading}>
+                {loading ? "Creating..." : "Create Account"}
+              </Button>
+              {error && <p className="text-center text-sm text-red-400">{error}</p>}
               <div className="text-center text-sm text-gray-400">
                 Already have an account?{" "}
                 <Link href="/login" className="font-medium text-cyan-400 hover:underline">

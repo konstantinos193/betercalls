@@ -4,8 +4,15 @@ import { RecentCallsTable } from "@/components/admin/recent-calls-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { Megaphone, Target, Users } from "lucide-react"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../api/auth/[...nextauth]"
+import { redirect } from "next/navigation"
 
 export default async function AdminDashboard() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    redirect("/login")
+  }
   const supabase = createSupabaseAdminClient()
   const { data: experts } = await supabase.from("experts").select("*")
 

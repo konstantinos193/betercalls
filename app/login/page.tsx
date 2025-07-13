@@ -5,9 +5,37 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
 import { Zap } from "lucide-react"
-import { signIn } from "@/app/auth/actions"
+import { useState } from "react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
-export default function LoginPage({ searchParams }: { searchParams: { message: string } }) {
+export default function LoginPage() {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const form = e.currentTarget;
+    const email = form.email.value;
+    const password = form.password.value;
+    try {
+      const loginRes = await signIn("credentials", {
+        email,
+        password,
+        redirect: false
+      });
+      if (loginRes?.error) throw new Error(loginRes.error);
+      router.push("/account");
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="bg-[#0D0D0D] text-gray-200 font-sans min-h-screen flex flex-col">
       <SiteHeader />
@@ -21,7 +49,7 @@ export default function LoginPage({ searchParams }: { searchParams: { message: s
             <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
             <CardDescription className="text-gray-400">Log in to access your calls.</CardDescription>
           </CardHeader>
-          <form action={signIn}>
+          <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -51,8 +79,10 @@ export default function LoginPage({ searchParams }: { searchParams: { message: s
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300">Log In</Button>
-              {searchParams.message && <p className="text-center text-sm text-red-400">{searchParams.message}</p>}
+              <Button className="w-full bg-cyan-400 text-black font-bold hover:bg-cyan-300" disabled={loading}>
+                {loading ? "Logging in..." : "Log In"}
+              </Button>
+              {error && <p className="text-center text-sm text-red-400">{error}</p>}
               <div className="text-center text-sm text-gray-400">
                 Don't have an account?{" "}
                 <Link href="/sign-up" className="font-medium text-cyan-400 hover:underline">

@@ -1,15 +1,16 @@
 import { SiteHeader } from "@/components/site-header"
 import { FooterV2 } from "@/components/footer-v2"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { OfficialCallCard } from "@/components/official-call-card"
 import type { Call } from "@/types/calls"
 import { User, Users } from "lucide-react"
 import { StatCard } from "@/components/expert-stat-card"
 import { FollowButton } from "@/components/follow-button"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../../api/auth/[...nextauth]"
+import { createClient } from "@supabase/supabase-js"
 
-// Force dynamic rendering for this page since it uses authentication and fetches data
 export const dynamic = 'force-dynamic'
 
 function formatDistanceToNow(dateString: string) {
@@ -21,34 +22,34 @@ function formatDistanceToNow(dateString: string) {
   const days = Math.round(hours / 24)
 
   if (seconds < 60) return `${seconds}s ago`
-  if (minutes < 60) return `${minutes}m ago`
   if (hours < 24) return `${hours}h ago`
   return `${days}d ago`
 }
 
 export default async function ExpertProfilePage({ params }: { params: { expertId: string } }) {
-  const supabase = createSupabaseServerClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    redirect("/login")
+  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   const { data: expert, error: expertError } = await supabase
     .from("experts")
     .select("*")
     .eq("id", params.expertId)
     .single()
-
   if (expertError || !expert) {
     notFound()
   }
 
   let isFollowing = false
-  if (user) {
+  if (session?.user) {
     const { data: followData } = await supabase
       .from("expert_followers")
       .select("expert_id")
-      .eq("user_id", user.id)
+      .eq("user_id", session.user.id)
       .eq("expert_id", expert.id)
       .single()
     isFollowing = !!followData
@@ -103,7 +104,7 @@ export default async function ExpertProfilePage({ params }: { params: { expertId
               </div>
               <p className="mt-2 text-gray-400">{expert.bio || "No bio available."}</p>
               <div className="mt-4">
-                {user && <FollowButton expertId={expert.id} initialIsFollowing={isFollowing} />}
+                {session?.user && <FollowButton expertId={expert.id} initialIsFollowing={isFollowing} />}
               </div>
             </div>
           </header>

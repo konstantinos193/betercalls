@@ -1,7 +1,5 @@
 import { SiteHeader } from "@/components/site-header"
 import { FooterV2 } from "@/components/footer-v2"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,27 +8,28 @@ import Link from "next/link"
 import { UpdatePasswordForm } from "@/components/update-password-form"
 import { UpdateProfileForm } from "@/components/update-profile-form"
 import { AvatarUploadForm } from "@/components/avatar-upload-form"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../api/auth/[...nextauth]"
+import { redirect } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
 
-// Force dynamic rendering for this page since it uses authentication and fetches data
 export const dynamic = 'force-dynamic'
 
 export default async function AccountPage() {
-  const supabase = createSupabaseServerClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
     redirect("/login")
   }
-
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-  const getPlanName = (tier: string | null) => {
-    if (!tier) return "No Plan"
-    return tier.charAt(0).toUpperCase() + tier.slice(1) + " Plan"
-  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  // Fetch user profile from Supabase users table
+  const { data: userProfile } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", session.user.email)
+    .single()
 
   return (
     <div className="bg-[#0D0D0D] text-gray-200 font-sans min-h-screen flex flex-col">
@@ -47,29 +46,11 @@ export default async function AccountPage() {
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <h3 className="font-semibold text-gray-400 text-sm">Email Address</h3>
-                <p className="text-white">{user.email}</p>
+                <p className="text-white">{session.user.email}</p>
               </div>
               <div className="space-y-1">
                 <h3 className="font-semibold text-gray-400 text-sm">Display Name</h3>
-                <p className="text-white">{profile?.full_name || "Not set"}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-semibold text-gray-400 text-sm">Subscription</h3>
-                <div className="flex items-center gap-4">
-                  <p className="text-white">{getPlanName(profile?.subscription_tier)}</p>
-                  {profile?.subscription_status && (
-                    <Badge
-                      className={cn(
-                        "border",
-                        profile.subscription_status === "active"
-                          ? "bg-green-500/20 text-green-400 border-green-500/30"
-                          : "bg-red-500/20 text-red-400 border-red-500/30",
-                      )}
-                    >
-                      {profile.subscription_status}
-                    </Badge>
-                  )}
-                </div>
+                <p className="text-white">{userProfile?.name || session.user.email}</p>
               </div>
             </CardContent>
             <CardFooter>
@@ -90,8 +71,8 @@ export default async function AccountPage() {
             </CardHeader>
             <CardContent>
               <AvatarUploadForm
-                currentAvatarUrl={profile?.avatar_url || null}
-                userName={profile?.full_name || user.email}
+                currentAvatarUrl={userProfile?.avatar_url || null}
+                userName={userProfile?.name || session.user.email}
               />
             </CardContent>
           </Card>
@@ -102,7 +83,7 @@ export default async function AccountPage() {
               <CardTitle className="text-xl font-bold text-white">Update Profile</CardTitle>
             </CardHeader>
             <CardContent>
-              <UpdateProfileForm fullName={profile?.full_name || null} />
+              <UpdateProfileForm fullName={userProfile?.name || null} />
             </CardContent>
           </Card>
 

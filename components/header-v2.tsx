@@ -4,7 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Zap, Menu } from "lucide-react"
 import type { User } from "@supabase/supabase-js"
-import { signOut } from "@/app/auth/actions"
+import { signOut } from "next-auth/react"
+
+function SignOutButton() {
+  return (
+    <Button
+      variant="ghost"
+      className="text-gray-300 hover:bg-gray-800 hover:text-white"
+      onClick={() => signOut({ callbackUrl: "/login" })}
+    >
+      Log Out
+    </Button>
+  )
+}
 
 type HeaderV2Props = {
   user: User | null
@@ -37,11 +49,7 @@ export function HeaderV2({ user }: HeaderV2Props) {
               <Button asChild variant="ghost" className="text-gray-300 hover:bg-gray-800 hover:text-white">
                 <Link href="/account">My Account</Link>
               </Button>
-              <form action={signOut}>
-                <Button type="submit" variant="ghost" className="text-gray-300 hover:bg-gray-800 hover:text-white">
-                  Log Out
-                </Button>
-              </form>
+              <SignOutButton />
             </>
           ) : (
             <>
@@ -102,17 +110,9 @@ export function HeaderV2({ user }: HeaderV2Props) {
                           My Account
                         </Link>
                       </SheetClose>
-                      <form action={signOut} className="w-full">
-                        <SheetClose asChild>
-                          <Button
-                            type="submit"
-                            variant="outline"
-                            className="w-full border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black bg-transparent"
-                          >
-                            Log Out
-                          </Button>
-                        </SheetClose>
-                      </form>
+                      <SheetClose asChild>
+                        <SignOutButton />
+                      </SheetClose>
                     </>
                   ) : (
                     <>
