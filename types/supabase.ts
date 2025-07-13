@@ -270,6 +270,33 @@ export type Database = {
           }
         ]
       }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          icon_name: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          icon_name?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          icon_name?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discussions: {
         Row: {
           id: string

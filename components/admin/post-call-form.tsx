@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useFormState, useFormStatus } from "react-dom"
-import { createCall, type FormState } from "@/app/admin/actions"
+import { createCall, type FormState } from "@/app/standoda/actions"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,10 +14,10 @@ import { cn } from "@/lib/utils"
 import type { Database } from "@/types/supabase"
 import { UploadCloud } from "lucide-react"
 
-type Category = Database["public"]["Tables"]["categories"]["Row"]
+type Expert = Database["public"]["Tables"]["experts"]["Row"]
 
 type PostCallFormProps = {
-  categories: Category[]
+  experts: Expert[]
 }
 
 function SubmitButton() {
@@ -29,37 +29,31 @@ function SubmitButton() {
   )
 }
 
-export function PostCallForm({ categories }: PostCallFormProps) {
+export function PostCallForm({ experts }: PostCallFormProps) {
   const initialState: FormState = { message: "", success: false }
   const [state, dispatch] = useFormState(createCall, initialState)
   const formRef = React.useRef<HTMLFormElement>(null)
-  const [fileName, setFileName] = React.useState("")
 
   React.useEffect(() => {
     if (state.success) {
       formRef.current?.reset()
-      setFileName("")
     }
   }, [state])
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFileName(e.target.files?.[0]?.name || "")
-  }
 
   return (
     <form ref={formRef} action={dispatch}>
       <Card className="bg-black/30 border-gray-800/50">
         <CardContent className="p-6 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="category-id">Category</Label>
-            <Select name="category-id" required>
+            <Label htmlFor="expertId">Expert</Label>
+            <Select name="expertId" required>
               <SelectTrigger className="bg-gray-900/80 border-gray-700">
-                <SelectValue placeholder="Select a category" />
+                <SelectValue placeholder="Select an expert" />
               </SelectTrigger>
               <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                {experts.map((expert) => (
+                  <SelectItem key={expert.id} value={expert.id}>
+                    {expert.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -67,28 +61,60 @@ export function PostCallForm({ categories }: PostCallFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="screenshot">Call Screenshot</Label>
-            <Label
-              htmlFor="screenshot"
-              className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-900/50 hover:bg-gray-900/80"
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <UploadCloud className="w-8 h-8 mb-4 text-gray-500" />
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-gray-600">PNG, JPG or GIF</p>
-              </div>
+            <Label htmlFor="betType">Bet Type</Label>
+            <Input
+              id="betType"
+              name="betType"
+              placeholder="e.g., Moneyline, Spread, Over/Under"
+              className="bg-gray-900/80 border-gray-700"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="matchHomeTeam">Home Team</Label>
               <Input
-                id="screenshot"
-                name="screenshot"
-                type="file"
-                className="hidden"
+                id="matchHomeTeam"
+                name="matchHomeTeam"
+                placeholder="Home team name"
+                className="bg-gray-900/80 border-gray-700"
                 required
-                onChange={handleFileChange}
               />
-            </Label>
-            {fileName && <p className="text-xs text-gray-400 text-center">Selected: {fileName}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="matchAwayTeam">Away Team</Label>
+              <Input
+                id="matchAwayTeam"
+                name="matchAwayTeam"
+                placeholder="Away team name"
+                className="bg-gray-900/80 border-gray-700"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="odds">Odds</Label>
+              <Input
+                id="odds"
+                name="odds"
+                placeholder="e.g., -110, +150"
+                className="bg-gray-900/80 border-gray-700"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pick">Pick</Label>
+              <Input
+                id="pick"
+                name="pick"
+                placeholder="e.g., Home Team -3.5"
+                className="bg-gray-900/80 border-gray-700"
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -104,6 +130,22 @@ export function PostCallForm({ categories }: PostCallFormProps) {
               required
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select name="status" required>
+              <SelectTrigger className="bg-gray-900/80 border-gray-700">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-700 text-white">
+                <SelectItem value="Upcoming">Upcoming</SelectItem>
+                <SelectItem value="Won">Won</SelectItem>
+                <SelectItem value="Lost">Lost</SelectItem>
+                <SelectItem value="Push">Push</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="analysis">Expert Analysis (Optional)</Label>
             <Textarea

@@ -96,37 +96,36 @@ export async function saveExpert(prevState: FormState, formData: FormData): Prom
   return { message: "Expert saved successfully!", success: true }
 }
 
-// TODO: Uncomment after running the categories migration
-// export async function saveCategory(prevState: FormState, formData: FormData): Promise<FormState> {
-//   const supabase = createSupabaseAdminClient()
-//   const id = formData.get("id") as string
+export async function saveCategory(prevState: FormState, formData: FormData): Promise<FormState> {
+  const supabase = createSupabaseAdminClient()
+  const id = formData.get("id") as string
 
-//   const categoryData = {
-//     name: formData.get("name") as string,
-//     description: formData.get("description") as string,
-//     icon_name: formData.get("icon_name") as string,
-//   }
+  const categoryData = {
+    name: formData.get("name") as string,
+    description: formData.get("description") as string,
+    icon_name: formData.get("icon_name") as string,
+  }
 
-//   let error
+  let error
 
-//   if (id) {
-//     // Update existing category
-//     const { error: updateError } = await supabase.from("categories").update(categoryData).eq("id", id)
-//     error = updateError
-//   } else {
-//     // Create new category
-//     const { error: insertError } = await supabase.from("categories").insert(categoryData)
-//     error = insertError
-//   }
+  if (id) {
+    // Update existing category
+    const { error: updateError } = await supabase.from("categories").update(categoryData).eq("id", id)
+    error = updateError
+  } else {
+    // Create new category
+    const { error: insertError } = await supabase.from("categories").insert(categoryData)
+    error = insertError
+  }
 
-//   if (error) {
-//     console.error("Error saving category:", error)
-//     return { message: `Database Error: ${error.message}`, success: false }
-//   }
+  if (error) {
+    console.error("Error saving category:", error)
+    return { message: `Database Error: ${error.message}`, success: false }
+  }
 
-//   revalidatePath("/admin/categories")
-//   return { message: "Category saved successfully!", success: true }
-// }
+  revalidatePath("/admin/categories")
+  return { message: "Category saved successfully!", success: true }
+}
 
 export async function updateUserSubscription(prevState: FormState, formData: FormData): Promise<FormState> {
   const supabase = createSupabaseAdminClient()

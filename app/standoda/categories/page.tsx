@@ -4,6 +4,7 @@ import { CategoriesManagement } from "@/components/admin/categories-management"
 
 export default async function AdminCategoriesPage() {
   const supabase = createSupabaseAdminClient()
+
   const { data: categories, error } = await supabase.from("categories").select("*").order("name")
 
   if (error) {
