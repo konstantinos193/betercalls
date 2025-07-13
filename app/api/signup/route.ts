@@ -8,18 +8,33 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
-  const { email, password, name } = await req.json();
-  if (!email || !password) {
-    return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+  try {
+    const { email, password, name } = await req.json();
+    console.log("Signup request received for:", email);
+    
+    if (!email || !password) {
+      console.log("Missing email or password");
+      return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+    }
+    
+    const password_hash = await bcrypt.hash(password, 10);
+    console.log("Password hashed, inserting user...");
+    
+    const { data, error } = await supabase
+      .from("users")
+      .insert([{ email, password_hash, name }])
+      .select()
+      .single();
+      
+    if (error) {
+      console.log("Database error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    
+    console.log("User created successfully:", { id: data.id, email: data.email });
+    return NextResponse.json({ user: { id: data.id, email: data.email, name: data.name } });
+  } catch (error) {
+    console.error("Signup error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  const password_hash = await bcrypt.hash(password, 10);
-  const { data, error } = await supabase
-    .from("users")
-    .insert([{ email, password_hash, name }])
-    .select()
-    .single();
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
-  }
-  return NextResponse.json({ user: { id: data.id, email: data.email, name: data.name } });
 } 

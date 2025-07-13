@@ -24,24 +24,31 @@ export default function SignUpPage() {
     const email = form.email.value;
     const password = form.password.value;
     const name = form.name.value;
+    
     try {
+      console.log("Starting signup process...");
+      
+      // Step 1: Create user account
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name })
       });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Sign up failed");
-      // Auto-login after signup
-      const loginRes = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: "/account"
-      });
-      if (loginRes?.error) throw new Error(loginRes.error);
-      router.push("/account");
+      console.log("Signup response:", { status: res.status, data });
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Sign up failed");
+      }
+      
+      console.log("User created successfully, redirecting to login page...");
+      
+      // Instead of auto-login, redirect to login page
+      router.push("/login?message=Account created successfully! Please log in.");
+      
     } catch (err: any) {
+      console.error("Signup error:", err);
       setError(err.message || "Sign up failed");
     } finally {
       setLoading(false);

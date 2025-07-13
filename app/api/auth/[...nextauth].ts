@@ -19,8 +19,11 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
           return null;
         }
+        
+        console.log("Attempting to authorize user:", credentials.email);
         
         // 1. Look up user by email
         const { data: user, error } = await supabase
@@ -29,12 +32,26 @@ export const authOptions = {
           .eq("email", credentials.email)
           .single();
 
-        if (error || !user) return null;
+        if (error) {
+          console.log("Database error:", error);
+          return null;
+        }
+        
+        if (!user) {
+          console.log("User not found");
+          return null;
+        }
+
+        console.log("User found:", { id: user.id, email: user.email });
 
         // 2. Compare password hash
         const isValid = await bcrypt.compare(credentials.password, user.password_hash);
-        if (!isValid) return null;
+        if (!isValid) {
+          console.log("Invalid password");
+          return null;
+        }
 
+        console.log("Password valid, returning user");
         // 3. Return user object (omit password_hash)
         return { id: user.id, name: user.name, email: user.email };
       }
