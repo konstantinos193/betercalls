@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { SiteHeader } from "@/components/site-header"
+import { ClientHeader } from "@/components/client-header"
 import { Zap } from "lucide-react"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
@@ -49,7 +49,7 @@ export default function SignUpPage() {
 
   return (
     <div className="bg-[#0D0D0D] text-gray-200 font-sans min-h-screen flex flex-col">
-      <SiteHeader />
+      <ClientHeader />
       <main className="flex-grow flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-black/30 border-gray-800/50 shadow-[0_0_30px_rgba(56,189,248,0.1)]">
           <CardHeader className="text-center">
